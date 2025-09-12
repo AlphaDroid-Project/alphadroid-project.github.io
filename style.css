@@ -316,3 +316,146 @@
             text-decoration: none;
             color: white;
         }
+
+        /* Screenshots carousel */
+#screenshots {
+	/* Shot size variables for consistent centering */
+	--shot-w: 280px;
+	--shot-h: 560px;
+}
+#screenshots h4 {
+	color: #fff;
+	margin-bottom: 3rem;
+}
+#screenshots .carousel {
+	position: relative;
+	height: 600px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	perspective: 1200px;
+	touch-action: pan-y; /* allow horizontal swipe without interfering with page scroll */
+}
+
+#screenshots .carousel.smooth .carousel-track {
+	/* hint compositor to keep this layer */
+	will-change: transform;
+}
+
+#screenshots .carousel.smooth .carousel-slide {
+	/* Force visibility to stay visible and let opacity animate the hide/show */
+	visibility: visible !important;
+	/* Smoother animation and less flicker */
+	will-change: transform, opacity, filter;
+	backface-visibility: hidden;
+	transform-style: preserve-3d;
+	transition:
+		transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+		opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+		filter 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+#screenshots .carousel.smooth .carousel-slide img {
+	/* Reduce texture popping during transforms */
+	will-change: transform, opacity;
+}
+
+/* Respect reduced motion: minimize transforms, keep quick fades */
+@media (prefers-reduced-motion: reduce) {
+	#screenshots .carousel.smooth .carousel-slide {
+		transition:
+			transform 0s linear,
+			opacity 200ms linear,
+			filter 200ms linear;
+	}
+}
+
+#screenshots .carousel-slide {
+	position: absolute;
+	transform-origin: center center;
+	transition:
+		transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+		opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+		filter 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	width: var(--shot-w);
+	height: var(--shot-h);
+	left: 50%;
+	top: 50%;
+	margin-left: calc(var(--shot-w) / -2);
+	margin-top: calc(var(--shot-h) / -2);
+}
+#screenshots .carousel-slide img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: 24px;
+	display: block;
+	box-shadow:
+		0 20px 40px rgba(0,0,0,0.35),
+		0 0 0 1px rgba(255,255,255,0.08) inset;
+}
+
+/* Navigation buttons */
+#screenshots .nav {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	pointer-events: none;
+	z-index: 10;
+}
+#screenshots .nav button {
+	pointer-events: auto;
+	border: none;
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	margin: 0 1rem;
+}
+#screenshots .nav button:hover {
+	transform: scale(1.1);
+}
+#screenshots .nav button:disabled {
+	opacity: 0.3;
+	cursor: default;
+	transform: none;
+}
+
+/* Pagination dots */
+#screenshots .pagination {
+	position: absolute;
+	bottom: -15px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	gap: 0;
+	z-index: 10;
+}
+#screenshots .pagination:empty {
+	display: none; /* avoid flicker before JS builds dots */
+}
+#screenshots .pagination .dot {
+	height: 0.25rem;
+	background: rgba(255,255,255,0.15);
+	cursor: pointer;
+	transition: all 0.3s ease;
+	border: none;
+}
+#screenshots .pagination .dot:focus-visible {
+	outline: 2px solid #4fc3f7;
+	outline-offset: 2px;
+}
+#screenshots .pagination .dot.active {
+	background: var(--tertiary);
+	transform: scale(1.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	#screenshots .carousel { height: 420px; }
+	/* Smaller shot size; centering remains correct via variables */
+	#screenshots { --shot-w: 200px; --shot-h: 420px; }
+	/* img already uses 100% of slide */
+}
