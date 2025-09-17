@@ -15,11 +15,40 @@
 
     <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
     <style>
-
+        /* Push the footer behind everything and disable interaction */
+        footer.s.fixed.bottom-align.right-align {
+            z-index: -1;
+            pointer-events: none;
+        }
+        /* Floating action button above all, respecting bottom navbar and safe area */
+        .fab {
+            position: fixed;
+            right: 16px;
+            bottom: calc(var(--fab-bottom, 16px) + env(safe-area-inset-bottom));
+            z-index: 9999;
+            transition: opacity 400ms cubic-bezier(.4,0,.2,1), transform 400ms cubic-bezier(.4,0,.2,1);
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .fab.hide {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(40px);
+        }
+        /* Add fade transitions for hero and app */
+        #hero, #app {
+            transition: opacity 400ms ease-in-out;
+        }
+        #hero.fade-out, #app.fade-out {
+            opacity: 0;
+        }
+        #hero.fade-in, #app.fade-in {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
-    <header class="fixed bottom-align center-align" >
+    <header class="fixed center-align" >
         <nav>
             <button id="home" class="center-align extra transparent">
                 <i><svg width="69" height="70" viewBox="0 0 69 70" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -41,51 +70,181 @@
                 <span>Download</span>
             </button>
         </header>
-        <a class="active"  onclick="navigateTo('#')">
+        <a id="nav-home-desktop" onclick="navigateTo('#')">
             <i>home</i>
             <span>Home</span>
         </a>
-        <a  onclick="navigateTo('#features')">
+        <a id="nav-features-desktop" onclick="navigateTo('#features')">
             <i>checklist</i>
             <span>Features</span>
         </a>
-        <a  onclick="navigateTo('#screenshots')">
+        <a id="nav-screenshots-desktop" onclick="navigateTo('#screenshots')">
             <i>smartphone</i>
             <span>Screenshots</span>
         </a>
     </nav>
     <nav id="mobile" class="s bottom">
-        <a class="active" onclick="navigateTo('#')">
+        <a id="nav-home-mobile" onclick="navigateTo('#')">
             <i>home</i>
             <span>Home</span>
         </a>
-        <a onclick="navigateTo('#features')">
+        <a id="nav-features-mobile" onclick="navigateTo('#features')">
             <i>checklist</i>
             <span>Features</span>
         </a>
-        <a onclick="navigateTo('#screenshots')">
+        <a id="nav-screenshots-mobile" onclick="navigateTo('#screenshots')">
             <i>smartphone</i>
             <span>Screenshots</span>
         </a>
     </nav>
-    <footer class="s fixed transparent bottom-align right-align">
-        <nav class="flex bottom-align medium-margin">
-            <button class="extend circle extra large-elevate" onclick="navigateTo('#devices')">
-                <i>download</i>
-                <span>Download</span>
-            </button>
-        </nav>
-    </footer>
 
-    <main class="responsive max">
+    <nav class="fab flex bottom-align medium-margin">
+        <button class="extend circle extra large-elevate" onclick="navigateTo('#devices')">
+            <i>download</i>
+            <span>Download</span>
+        </button>
+    </nav>
+
+    <main class="responsive max" style="min-height:100vh; padding: 0;">
+        <!-- Hero moved outside main for full-width layout -->
+        <section id="hero" class="hero" style="display:flex; align-items:center; justify-content:center; box-sizing:border-box; position:relative; overflow:hidden;">
+            <div class="container">
+                <div class="hero-content center-align" style="position:relative; z-index:1;">
+                    <h1>Experience the Future of Android</h1>
+                    <p>AlphaDroid is a custom ROM based on LineageOS/crDroid, with a new look and some extra features and optimizations.</p>
+                    <div class="hero-buttons large-padding">
+                        <a href="#download">
+                            <button class="round large">
+                                <i>rocket_launch</i>
+                                <span>Install Now</span>
+                            </button>
+                        </a>
+                        <a href="#features">
+                            <button class="round large border">
+                                <i>visibility</i>
+                                <span>View Features</span>
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
         <div id="app"></div>
     </main>
+
+
 
     <script src="index.js" defer></script>
     <script src="route.js"></script>
     <script>
+        // Adjust FAB position to sit above the bottom navbar when it's visible
+        function updateFabPosition() {
+            const mobileNav = document.getElementById('mobile');
+            let offset = 16; // default when no bottom nav or on larger screens
+
+            if (mobileNav) {
+                const styles = window.getComputedStyle(mobileNav);
+                const isVisible = styles.display !== 'none' && styles.visibility !== 'hidden' && styles.opacity !== '0';
+                if (isVisible) {
+                    offset = (mobileNav.offsetHeight || 0) + 16;
+                }
+            }
+
+            // Hide FAB when desktop navigation rail is visible
+            const desktopNav = document.getElementById('desktop');
+            const fab = document.querySelector('nav.fab');
+            let desktopVisible = false;
+            if (desktopNav) {
+                const ds = window.getComputedStyle(desktopNav);
+                desktopVisible = ds.display !== 'none' && ds.visibility !== 'hidden' && desktopNav.offsetWidth > 0 && desktopNav.offsetHeight > 0;
+            }
+            // Hide FAB when at #devices route
+            const hash = window.location.hash || '#';
+            if (fab) {
+                if (desktopVisible || hash === '#devices') {
+                    fab.classList.add('hide');
+                } else {
+                    fab.classList.remove('hide');
+                }
+            }
+
+            document.documentElement.style.setProperty('--fab-bottom', offset + 'px');
+        }
+
+        // New function to update hero min-height
+        function updateHeroHeight() {
+            const hero = document.querySelector('.hero');
+            const header = document.querySelector('header');
+            const mobileNav = document.getElementById('mobile');
+            let headerHeight = header ? header.offsetHeight : 0;
+            let mobileNavHeight = 0;
+            if (mobileNav) {
+                const styles = window.getComputedStyle(mobileNav);
+                const isVisible = styles.display !== 'none' && styles.visibility !== 'hidden' && styles.opacity !== '0';
+                if (isVisible) {
+                    mobileNavHeight = mobileNav.offsetHeight;
+                }
+            }
+            const totalSubtract = headerHeight + mobileNavHeight;
+            const viewportHeight = window.innerHeight;
+            const newHeight = viewportHeight - totalSubtract;
+            hero.style.minHeight = newHeight + 'px';
+        }
+
+        // New: Show/hide hero based on route
+        function updateHeroVisibility() {
+            const hero = document.getElementById('hero');
+            if (!hero) return;
+            const hash = window.location.hash || '#';
+            const homeSectionHashes = ['#', '#home', '#features', '#screenshots', '#download'];
+            const onHomePage = window.__currentPagePath === 'pages/home.html';
+            if (homeSectionHashes.includes(hash) || onHomePage) {
+                hero.style.display = 'flex';
+            } else {
+                hero.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateFabPosition();
+            updateHeroHeight();
+            updateHeroVisibility();
+            // Initialize navigation state with a slight delay to ensure DOM is ready
+            setTimeout(() => {
+                if (typeof updateNavigationState === 'function') {
+                    updateNavigationState();
+                }
+            }, 100);
+        });
+        window.addEventListener('resize', () => {
+            updateFabPosition();
+            updateHeroHeight();
+        });
+        window.addEventListener('orientationchange', () => {
+            updateFabPosition();
+            updateHeroHeight();
+        });
+        window.addEventListener('hashchange', () => {
+            updateHeroVisibility();
+            updateFabPosition(); // <-- ensure FAB updates on hash change
+            // Ensure navigation state updates on hash change
+            setTimeout(() => {
+                if (typeof updateNavigationState === 'function') {
+                    updateNavigationState();
+                }
+            }, 50);
+        });
+        
+        // Add scroll listener for navigation state updates when DOM is ready
+        window.addEventListener('scroll', () => {
+            if (typeof handleScrollNavigationUpdate === 'function') {
+                handleScrollNavigationUpdate();
+            }
+        }, { passive: true });
+
         document.getElementById('menu').addEventListener('click', function() {
             document.getElementById('desktop').classList.toggle('max');
+            updateFabPosition();
         });
 
         document.getElementById('home').addEventListener('click', function() {

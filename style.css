@@ -64,208 +64,27 @@
             line-height: 1.6;
             overflow-x: hidden;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+        /* Page Transitions */
+        #app {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: opacity, transform;
+            padding-left: 17.5em;
+            padding-right: 17.5em;
         }
 
-/* Page Transitions */
-#app {
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: opacity, transform;
-}
-
-#app.fade-out {
-    opacity: 0;
-    transform: translateY(20px);
-    pointer-events: none;
-}
-
-#app.fade-in {
-    opacity: 1;
-    transform: translateY(0);
-}        /* Ensure container is full height */
-        main.responsive {
-            min-height: 100vh;
-            padding-top: 80px;
+        #app.fade-out {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
         }
 
-        /* Shared button styles */
-        .cta-button,
-        .secondary-button {
-            border: none;
-            padding: 12px 24px;
-            border-radius: 100px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--animation-speed);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+        #app.fade-in {
+            opacity: 1;
+            transform: translateY(0);
         }
-
-        .cta-button {
-            background-color: var(--primary);
-            color: var(--on-primary);
-            box-shadow: var(--elevation);
-        }
-
-        .secondary-button {
-            background-color: var(--secondary-container);
-            color: var(--on-secondary-container);
-        }
-
-        .cta-button:hover,
-        .secondary-button:hover {
-            transform: translateY(-2px);
-        }
-
-        .cta-button:hover {
-            background-color: var(--primary-container);
-            color: var(--on-primary-container);
-            box-shadow: var(--hover-elevation);
-        }
-
-        .secondary-button:hover {
-            background-color: var(--secondary);
-            color: var(--on-secondary);
-        }
-
-        /* Hero Section */
-        .hero {
-            padding: 180px 0 100px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-content {
-            max-width: 700px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 24px;
-            line-height: 1.2;
-        }
-
-        .hero p {
-            font-size: 1.25rem;
-            margin-bottom: 40px;
-            color: var(--on-surface-variant);
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .hero-animation {
-            position: absolute;
-            top: 50%;
-            right: -200px;
-            transform: translateY(-50%);
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
-            opacity: 0.2;
-            z-index: 1;
-            animation: float 8s ease-in-out infinite;
-        }
-
-        .math-expression {
-            position: absolute;
-            top: 50%;
-            right: 100px;
-            transform: translateY(-50%) rotate(-5deg);
-            font-size: 5rem;
-            color: var(--primary);
-            opacity: 0.15;
-            z-index: 0;
-            font-family: 'Times New Roman', serif;
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        /* Features Section */
-        .features {
-            padding: 100px 0;
-            margin: 0 20px;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 60px;
-            color: var(--on-surface);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .feature-card,
-        .device-card {
-            background-color: var(--surface);
-            border-radius: var(--border-radius);
-            transition: all var(--animation-speed);
-            box-shadow: var(--elevation);
-            position: relative;
-            overflow: hidden;
-            padding: 25px;
-        }
-
-        .feature-card:hover,
-        .device-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--hover-elevation);
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(to right, var(--primary), var(--tertiary));
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform var(--animation-speed);
-        }
-
-        .feature-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .feature-icon {
-            width: 64px;
-            height: 64px;
-            background-color: var(--primary-container);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-            color: var(--primary);
-            font-size: 1.8rem;
-        }
-
-        .feature-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-        }
-
-
         /* Animations */
         @keyframes float {
             0% {
@@ -289,27 +108,6 @@
             100% {
                 opacity: 0.1;
             }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .hero {
-                text-align: center;
-            }
-            
-            .hero-content {
-                max-width: 100%;
-            }
-            
-            .hero-buttons {
-                justify-content: center;
-            }
-            
-            .hero-animation, .math-expression {
-                display: none;
-            }
-            
-
         }
 
         .me{
@@ -452,10 +250,81 @@
 	transform: scale(1.2);
 }
 
+/* Feature card aspect ratio */
+.feature-card {
+	aspect-ratio: 6 / 2.8;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: stretch;
+	min-width: 0;
+}
+
+/* Ensure card content scales and aligns */
+.feature-card .row {
+	flex: 1 1 auto;
+	align-items: center;
+}
+
+/* Responsive: allow cards to shrink on mobile */
+@media (max-width: 700px) {
+	.feature-card {
+		aspect-ratio: 6 / 3;
+	}
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
 	#screenshots .carousel { height: 420px; }
 	/* Smaller shot size; centering remains correct via variables */
 	#screenshots { --shot-w: 200px; --shot-h: 420px; }
 	/* img already uses 100% of slide */
+}
+
+/* Large desktop */
+@media (max-width: 1400px) {
+    #app {
+        padding-left: 8em;
+        padding-right: 8em;
+    }
+}
+
+/* Desktop/tablet */
+@media (max-width: 1100px) {
+    #app {
+        padding-left: 4em;
+        padding-right: 4em;
+    }
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+    #app {
+        padding-left: 2em;
+        padding-right: 2em;
+    }
+}
+
+/* Large mobile */
+@media (max-width: 700px) {
+    #app {
+        padding-left: 1em;
+        padding-right: 1em;
+    }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+    #app {
+        padding-left: 0.5em;
+        padding-right: 0.5em;
+    }
+}
+
+/* Smallest screens */
+@media (max-width: 350px) {
+    #app {
+        padding-left: 0.25em;
+        padding-right: 0.25em;
+    }
 }

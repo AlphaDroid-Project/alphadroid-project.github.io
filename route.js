@@ -4,10 +4,14 @@ const routes = {
     "#features": "pages/home.html",     // will scroll to #features after render
     "#screenshots": "pages/home.html",  // will scroll to #screenshots after render (if present)
     "#devices": "pages/devices.html",
-    "#download": "pages/devices.html",
+    // UPDATED: #download now treated as home section (scroll to #download)
+    "#download": "pages/home.html",
     "#about": "pages/about.html",
     "#contact": "pages/contact.html"
 };
+
+// NEW: section hashes that should not trigger page reload when already on home
+const sectionHashes = new Set(['#features', '#screenshots', '#download']);
 
 // Small in-memory cache for fetched HTML fragments
 window.__pageCache = window.__pageCache || new Map();
@@ -57,21 +61,19 @@ function navigateTo(path) {
     // Convert path to hash if needed
     const hash = path.startsWith('#') ? path : '#' + path.replace(/^[/#]/, '');
     
-    // If we're already on this hash, just scroll to top for root
     if (hash === '#' && window.location.hash === '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
     }
 
-    // If target section exists on current page, scroll to it instead of navigation
     const targetId = hash.replace('#', '');
     const targetElement = document.getElementById(targetId);
+    // UPDATED: use header offset scroll when already on home sections
     if (targetElement && (window.location.hash === '' || window.location.hash === '#' || window.location.hash === '#home')) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        scrollWithHeaderOffset(targetElement);
         return;
     }
 
-    // Update hash which triggers hashchange event
     window.location.hash = hash;
 }
 
@@ -89,7 +91,16 @@ const makeLoadAction = (limit, scrollId) => async () => {
         const hasCards = container && container.querySelector('article[data-codename]');
         if (!hasCards) await loadDevices(limit);
     }
-    if (scrollId) scrollToSection(scrollId);
+    if (scrollId) {
+        scrollToSection(scrollId);
+    } else if (limit === 0) {
+        // Devices page: scroll to top below header
+        setTimeout(() => {
+            const header = document.querySelector('header');
+            const headerH = header ? header.getBoundingClientRect().height : 0;
+            window.scrollTo({ top: Math.max(0, headerH + 8), behavior: 'smooth' });
+        }, 120);
+    }
 };
 
 // Simplified route actions using the helper
@@ -98,33 +109,74 @@ const routeActions = {
     "#home": makeLoadAction(5),
     "#features": makeLoadAction(5, 'features'),
     "#screenshots": makeLoadAction(5, 'screenshots'),
-    "#devices": makeLoadAction(0),
-    "#download": makeLoadAction(0)
+    // UPDATED: #download now scrolls to in-page section "download"
+    "#download": makeLoadAction(5, 'download'),
+    "#devices": makeLoadAction(0)
 };
 
-// helper: smooth scroll to element by id if exists
+// NEW: helper to scroll accounting for fixed header height
+function scrollWithHeaderOffset(el, extra = 8) {
+    if (!el) return;
+    const header = document.querySelector('header');
+    const headerH = header ? header.getBoundingClientRect().height : 0;
+    const top = el.getBoundingClientRect().top + window.scrollY - headerH - extra;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+}
+
+// helper: smooth scroll to element by id if exists (now header-safe)
 function scrollToSection(id) {
     if (!id) return;
-    // small timeout to allow images/fonts to settle after innerHTML injection
     setTimeout(() => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            // If the section is inside the injected app content, try querySelector as well
+        let el = document.getElementById(id);
+        if (!el) {
             const appEl = document.getElementById('app');
-            const inside = appEl ? appEl.querySelector(`#${id}`) : null;
-            if (inside) inside.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            el = appEl ? appEl.querySelector(`#${id}`) : null;
         }
+        if (el) scrollWithHeaderOffset(el);
     }, 120);
 }
 
 async function updateContent() {
     const hash = window.location.hash || '#';
     const appDiv = document.getElementById("app");
-    // Start transition
+    const heroDiv = document.getElementById("hero");
+
+    // NEW: Skip reload for in-home sections if home already loaded
+    if (sectionHashes.has(hash) && window.__currentPagePath === 'pages/home.html') {
+        // Add fade transition for section navigation (including hero)
+        appDiv.classList.remove('fade-in');
+        appDiv.classList.add('fade-out');
+        if (heroDiv) {
+            heroDiv.classList.remove('fade-in');
+            heroDiv.classList.add('fade-out');
+        }
+        await new Promise(resolve => setTimeout(resolve, 200)); // Shorter fade for sections
+        
+        // Ensure any post-render action (e.g., lazy load devices preview) still runs
+        if (routeActions[hash]) routeActions[hash]().catch(err => console.error('routeAction error', err));
+        scrollToSection(hash.substring(1));
+        if (typeof window.updateHeroVisibility === 'function') window.updateHeroVisibility();
+        
+        // Update navigation state
+        updateNavigationState();
+        
+        // Fade back in
+        appDiv.classList.remove('fade-out');
+        appDiv.classList.add('fade-in');
+        if (heroDiv) {
+            heroDiv.classList.remove('fade-out');
+            heroDiv.classList.add('fade-in');
+        }
+        return;
+    }
+
+    // Start transition (including hero)
     appDiv.classList.remove('fade-in');
     appDiv.classList.add('fade-out');
+    if (heroDiv) {
+        heroDiv.classList.remove('fade-in');
+        heroDiv.classList.add('fade-out');
+    }
     await new Promise(resolve => setTimeout(resolve, 400)); // Wait for fade out
 
     try {
@@ -135,8 +187,13 @@ async function updateContent() {
                 appDiv.innerHTML = await response.text();
                 appDiv.classList.remove('fade-out');
                 appDiv.classList.add('fade-in');
+                if (heroDiv) {
+                    heroDiv.classList.remove('fade-out');
+                    heroDiv.classList.add('fade-in');
+                }
 
-                // Removed duplicate home load; rely on routeActions only
+                // NEW: record current page path for section skip logic
+                window.__currentPagePath = routes[routeKey];
 
                 // Run any route-specific post-render actions (scrolling, extra loads)
                 if (routeActions[routeKey]) {
@@ -145,6 +202,13 @@ async function updateContent() {
 
                 // Ensure footer present
                 if (typeof buildSiteFooter === 'function') buildSiteFooter();
+
+                // NEW: update hero visibility after content change
+                if (typeof window.updateHeroVisibility === 'function') window.updateHeroVisibility();
+
+                // Update navigation state
+                updateNavigationState();
+
                 return;
             }
         }
@@ -156,27 +220,152 @@ async function updateContent() {
             const directResp = await fetchContent(tryPath);
             if (directResp.ok) {
                 appDiv.innerHTML = await directResp.text();
+                appDiv.classList.remove('fade-out');
+                appDiv.classList.add('fade-in');
+                if (heroDiv) {
+                    heroDiv.classList.remove('fade-out');
+                    heroDiv.classList.add('fade-in');
+                }
+                window.__currentPagePath = tryPath;
+                updateNavigationState();
                 return;
             }
         } catch (e) {
-            // ignore and fall through to 404
+            // ignore
         }
 
         const notFoundResponse = await fetchContent('pages/404.html');
         appDiv.innerHTML = await notFoundResponse.text();
+        appDiv.classList.remove('fade-out');
+        appDiv.classList.add('fade-in');
+        if (heroDiv) {
+            heroDiv.classList.remove('fade-out');
+            heroDiv.classList.add('fade-in');
+        }
+        window.__currentPagePath = 'pages/404.html';
         if (typeof buildSiteFooter === 'function') buildSiteFooter();
+        updateNavigationState();
     } catch (error) {
         console.error('Error loading page:', error);
         appDiv.innerHTML = '<div class="container"><h1>Error</h1><p>Failed to load content. Please ensure you are running the site through a web server.</p></div>';
+        appDiv.classList.remove('fade-out');
+        appDiv.classList.add('fade-in');
+        if (heroDiv) {
+            heroDiv.classList.remove('fade-out');
+            heroDiv.classList.add('fade-in');
+        }
+        window.__currentPagePath = 'error';
         if (typeof buildSiteFooter === 'function') buildSiteFooter();
+        updateNavigationState();
     }
 }
 
+// NEW: Update navigation active states based on current route and scroll position
+function updateNavigationState() {
+    const hash = window.location.hash || '#';
+    
+    // Clear all active states first
+    const allNavItems = [
+        'nav-home-desktop', 'nav-features-desktop', 'nav-screenshots-desktop',
+        'nav-home-mobile', 'nav-features-mobile', 'nav-screenshots-mobile'
+    ];
+    
+    allNavItems.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.classList.remove('active');
+    });
+    
+    // Determine which navigation items should be active based on scroll position
+    let activeDesktop = null;
+    let activeMobile = null;
+    
+    // Check if we're on devices page - if so, no nav items should be active
+    if (hash === '#devices' || window.__currentPagePath === 'pages/devices.html') {
+        // Don't set any active states for devices page
+        return;
+    }
+    
+    // Check if we're on a home-related page
+    const isHomePage = !hash || hash === '#' || hash === '#home' || 
+                      sectionHashes.has(hash) || 
+                      window.__currentPagePath === 'pages/home.html';
+    
+    if (isHomePage) {
+        // Get sections to check scroll position
+        const sections = [
+            { id: 'features', nav: { desktop: 'nav-features-desktop', mobile: 'nav-features-mobile' } },
+            { id: 'screenshots', nav: { desktop: 'nav-screenshots-desktop', mobile: 'nav-screenshots-mobile' } },
+            { id: 'download', nav: { desktop: 'nav-screenshots-desktop', mobile: 'nav-screenshots-mobile' } }
+        ];
+        
+        let currentSection = null;
+        const header = document.querySelector('header');
+        const headerHeight = header ? header.getBoundingClientRect().height : 0;
+        const scrollOffset = headerHeight + 100; // Additional offset for better UX
+        
+        // Check which section is currently in view
+        for (const section of sections) {
+            const element = document.getElementById(section.id);
+            if (element) {
+                const rect = element.getBoundingClientRect();
+                const elementTop = rect.top + window.scrollY;
+                
+                if (window.scrollY + scrollOffset >= elementTop) {
+                    currentSection = section;
+                }
+            }
+        }
+        
+        if (currentSection) {
+            activeDesktop = currentSection.nav.desktop;
+            activeMobile = currentSection.nav.mobile;
+        } else {
+            // Default to home if no specific section is active
+            activeDesktop = 'nav-home-desktop';
+            activeMobile = 'nav-home-mobile';
+        }
+    }
+    // For other non-home routes like #about, #contact, no active state is set
+    
+    // Set active states
+    if (activeDesktop) {
+        const desktopElement = document.getElementById(activeDesktop);
+        if (desktopElement) desktopElement.classList.add('active');
+    }
+    
+    if (activeMobile) {
+        const mobileElement = document.getElementById(activeMobile);
+        if (mobileElement) mobileElement.classList.add('active');
+    }
+}
+
+// NEW: Throttled scroll handler for navigation updates
+let scrollUpdateTimeout = null;
+function handleScrollNavigationUpdate() {
+    if (scrollUpdateTimeout) return;
+    
+    scrollUpdateTimeout = setTimeout(() => {
+        updateNavigationState();
+        scrollUpdateTimeout = null;
+    }, 100); // Throttle to avoid excessive updates
+}
+
 // Handle browser navigation (back/forward buttons and hash changes)
-window.onhashchange = updateContent;
+window.onhashchange = () => {
+    updateContent();
+    // Ensure navigation state updates on hash change
+    setTimeout(() => updateNavigationState(), 50);
+};
 
 // Load the correct content when the page loads
-window.onload = updateContent;
+window.onload = () => {
+    updateContent();
+    // Ensure navigation state is set on initial load
+    setTimeout(() => updateNavigationState(), 100);
+    
+    // Add scroll listener for navigation updates
+    window.addEventListener('scroll', handleScrollNavigationUpdate, { passive: true });
+};
 
 /**
  * Fetch device JSON files from the GitHub repo and render device cards.
@@ -305,6 +494,9 @@ async function loadDevices(limit = 0) {
             return lum > 186 ? 'black' : 'white';
         }
 
+        // Ensure uniform card CSS is present
+        ensureUniformCardStyles();
+
         // Batch DOM insertion to reduce reflows
         const frag = document.createDocumentFragment();
 
@@ -326,6 +518,17 @@ async function loadDevices(limit = 0) {
                 if (raw) latestDisplay = isNaN(Date.parse(raw)) ? String(raw) : new Date(raw).toISOString().split('T')[0];
             }
 
+            // NEW: compute version text to show beside date
+            let versionDisplay = 'Unknown';
+            if (d.version) {
+                versionDisplay = String(d.version);
+            } else if (d.filename) {
+                const m = String(d.filename).match(/v?\d+(?:\.\d+)+/i);
+                versionDisplay = m ? m[0] : 'Unknown';
+            } else if (d.release) {
+                versionDisplay = String(d.release);
+            }
+
             // maintainer can be a string or object; build a simple display
             let maintName = '';
             let maintUrl = '';
@@ -341,8 +544,21 @@ async function loadDevices(limit = 0) {
 
             const infoLink = (res.rawUrl || (d.raw && d.raw.rawUrl) || `https://raw.githubusercontent.com/AlphaDroid-devices/OTA/master/${codename}.json`);
 
-            // compute chip values
-            const oemVal = (d.oem || d.vendor || d.brand || '').toString();
+            // compute chip values (OEM overridden by device_db.json if available)
+            // OLD: const oemVal = (d.oem || d.vendor || d.brand || '').toString();
+            let oemVal = (d.oem || d.vendor || d.brand || '').toString();
+            try {
+                const lc = codename.toLowerCase();
+                const ovMap = window.__overrides || null;
+                const aliasRev = window.__aliasReverse || null;
+                if (ovMap) {
+                    const parent = ovMap[lc] ? lc : (aliasRev && aliasRev[lc]);
+                    if (parent && ovMap[parent] && ovMap[parent].oem) {
+                        oemVal = ovMap[parent].oem;
+                    }
+                }
+            } catch (e) { /* ignore */ }
+
             const maintText = (typeof maintName === 'string' && maintName) ? maintName : (d.maintainer && typeof d.maintainer === 'string' ? d.maintainer : 'Unknown');
 
             const oemColor = getBrandColor(oemVal);
@@ -350,37 +566,52 @@ async function loadDevices(limit = 0) {
             const oemStyle = oemColor ? ('style="background:' + oemColor + '; color:' + oemTextColor + '; border-color: ' + oemColor + ';"') : '';
             const imageUrl = d.image || `images/devices/${codename}.webp`;
 
+            // NEW: resolve aliases for this card (from entry or global map)
+            const aliasList = Array.isArray(d.aliases)
+                ? d.aliases.map(x => String(x).toLowerCase())
+                : ((window.__aliasMap && window.__aliasMap[codename.toLowerCase()]) || []);
+            const aliasesAttr = aliasList.join(' ');
+
             const card = document.createElement('article');
-            card.className = 's12 m6 l4 padding center-align';
+            card.className = 's12 m6 l4 no-padding surface-container-high';
             card.setAttribute('data-codename', codename.toLowerCase());
-            card.setAttribute('data-oem', (oemVal || '').toLowerCase());
+            // Preserve original capitalization for OEM on the card
+            card.setAttribute('data-oem', (oemVal || '').trim());
             card.setAttribute('data-model', (fullname || '').toLowerCase());
+            if (aliasesAttr) card.setAttribute('data-aliases', aliasesAttr);
+
+            // NEW: simple card layout to match requested structure
             card.innerHTML = `
-                <div class="small-padding relative" style="aspect-ratio: 3 / 4; width: 100%;">
-                    <div style="display:flex; justify-content:center; align-items:flex-start; padding-top:8px;">
-                        <img loading="lazy" src="${escapeAttr(imageUrl)}" alt="${escapeAttr(fullname)}" style="width:72px;height:72px;object-fit:contain;" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'extra-large',textContent:'smartphone'}));">
-                    </div>
-                    <div class="absolute bottom left" style="width: 100%; text-align:left; display:flex; flex-direction:column; align-items:flex-start;">
-                        <h5 class="device-title" title="${escapeAttr(fullname)}" style="margin:0.75rem 0;">
-                            <span class="marquee-inner">${escapeHtml(fullname)}</span>
-                        </h5>
-                        <button class="chip fill round" style="margin-left:4px;">
-                            <i>today</i>
-                            <span>${escapeHtml(latestDisplay)}</span>
-                        </button>
-                        <div class="small-margin" style="width:100%;">
-                            <nav class="group connected" style="justify-content:flex-start;">
-                                <button class="chip left-round" ${oemStyle}><span>${escapeHtml(oemVal || 'Unknown')}</span></button>
-                                <button class="chip fill no-round"><span>${escapeHtml(maintText)}</span></button>
-                                <button class="chip fill right-round"><span>${escapeHtml(codename)}</span></button>
-                            </nav>
-                        </div>
-                        <div class="small-margin" style="display:flex; justify-content:flex-end; width:100%;">
-                            <button class="border round" onclick="showDeviceDetails('${escapeAttr(codename)}')">
-                                <i>info</i>
-                                <span>Details</span>
+                <img loading="lazy" class="responsive large surface-container-low" src="${escapeAttr(imageUrl)}" alt="${escapeAttr(fullname)}" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'extra-large',textContent:'smartphone'}));">
+                <div class="padding">
+                    <h5 class="device-title" title="${escapeAttr(fullname)}">
+                        <span class="marquee-inner">${escapeHtml(fullname)}</span>
+                    </h5>
+                    <div class="bottom-margin" style="display:flex;flex-wrap:wrap;gap:8px;margin:0.5rem 0;">
+                        <nav class="group connected" style="justify-content:flex-start; flex-wrap: wrap;">
+                            <button class="chip fill left-round">
+                                <i>today</i>
+                                <span>${escapeHtml(latestDisplay)}</span>
                             </button>
-                        </div>
+                            <!-- NEW: version chip -->
+                            <button class="chip fill right-round" title="Version">
+                                <i>tag</i>
+                                <span>${escapeHtml(versionDisplay)}</span>
+                            </button>
+                        </nav>
+                    </div>
+                    <div class="bottom-margin">
+                        <nav class="group connected" style="justify-content:flex-start; flex-wrap: wrap;">
+                            <button class="chip left-round" ${oemStyle}><span>${escapeHtml(oemVal || 'Unknown')}</span></button>
+                            <button class="chip fill no-round"><span>${escapeHtml(maintText)}</span></button>
+                            <button class="chip fill right-round"><span>${escapeHtml(codename)}</span></button>
+                        </nav>
+                    </div>
+                    <div class="small-margin" style="display:flex; justify-content:flex-end; width:100%;">
+                        <button class="border round" onclick="showDeviceDetails('${escapeAttr(codename)}')">
+                            <i>info</i>
+                            <span>Details</span>
+                        </button>
                     </div>
                 </div>
             `;
@@ -391,6 +622,51 @@ async function loadDevices(limit = 0) {
 
         // Single marquee initializer (deduplicated)
         initMarquee(grid);
+
+        // NEW: equalize heights after render and image load
+        const scheduleEqualize = () => {
+            // Use rAF to let layout settle
+            requestAnimationFrame(() => equalizeDeviceCardHeights(grid));
+        };
+        scheduleEqualize();
+
+        const imgs = grid.querySelectorAll('img');
+        if (imgs.length) {
+            let pending = imgs.length;
+            const done = (() => {
+                let called = false;
+                return () => {
+                    if (called) return;
+                    called = true;
+                    scheduleEqualize();
+                };
+            })();
+            imgs.forEach(img => {
+                const once = () => { pending--; if (pending <= 0) done(); };
+                img.addEventListener('load', once, { once: true });
+                img.addEventListener('error', once, { once: true });
+                // If already complete from cache
+                if (img.complete) once();
+            });
+        }
+
+        // Bind a global resize equalizer once
+        if (!window.__cardResizeBound) {
+            window.__cardResizeBound = true;
+            let t = 0;
+            window.addEventListener('resize', () => {
+                if (t) cancelAnimationFrame(t);
+                t = requestAnimationFrame(() => {
+                    document.querySelectorAll('.device-title').forEach(t => {
+                        t.dataset.marqueeInit = '';
+                        t.classList.remove('has-marquee'); // clear fade until recalculated
+                        const inn = t.querySelector('.marquee-inner');
+                        if (inn) inn.style.animation = 'none';
+                    });
+                    document.querySelectorAll('.grid.responsive').forEach(g => initMarquee(g));
+                });
+            }, { passive: true });
+        }
 
         if (limit && limit > 0) {
             const moreWrap = document.createElement('div');
@@ -419,6 +695,41 @@ async function loadDevices(limit = 0) {
             const db = await dbResp.json();
             const overrides = (db && db.overrides) ? db.overrides : {};
 
+            // NEW: collect hidden codenames (support both "hide" and "hidden")
+            const hiddenLower = new Set(
+                Object.entries(overrides)
+                    .filter(([, ov]) => ov && (ov.hide === true || ov.hidden === true))
+                    .map(([k]) => k.toLowerCase())
+            );
+
+            // NEW: expose alias maps globally for search and rendering (skip hidden)
+            const aliasMap = {};
+            Object.keys(overrides).forEach(k => {
+                if (hiddenLower.has(k.toLowerCase())) return; // skip hidden
+                const arr = Array.isArray(overrides[k].aliases) ? overrides[k].aliases : [];
+                if (arr.length) aliasMap[k.toLowerCase()] = arr.map(a => String(a).toLowerCase());
+            });
+            window.__aliasMap = aliasMap;
+            window.__aliasReverse = {};
+            Object.entries(aliasMap).forEach(([parent, arr]) => arr.forEach(a => window.__aliasReverse[a] = parent));
+
+            // NEW: also expose full overrides globally (lowercased keys, skip hidden)
+            window.__overrides = {};
+            Object.keys(overrides).forEach(k => {
+                if (!hiddenLower.has(k.toLowerCase())) window.__overrides[k.toLowerCase()] = overrides[k];
+            });
+
+            // NEW: build alias set so alias codenames are not rendered as separate cards (skip hidden)
+            const keys = Object.keys(overrides);
+            const aliasSet = new Set();
+            keys.forEach(k => {
+                if (hiddenLower.has(k.toLowerCase())) return; // skip hidden
+                const ov = overrides[k] || {};
+                if (Array.isArray(ov.aliases)) {
+                    ov.aliases.forEach(a => aliasSet.add(String(a).toLowerCase()));
+                }
+            });
+
             // Attempt to load the richer devices.json to preserve download/variant details
             let devicesList = [];
             try {
@@ -428,7 +739,13 @@ async function loadDevices(limit = 0) {
                 // ignore, we'll create minimal entries from overrides
             }
 
-            const entries = Object.keys(overrides).map(key => {
+            // Only create entries for parent keys (skip aliases and hidden)
+            const parentKeys = keys.filter(k => {
+                const lc = k.toLowerCase();
+                return !aliasSet.has(lc) && !hiddenLower.has(lc);
+            });
+
+            const entries = parentKeys.map(key => {
                 const ov = overrides[key] || {};
                 const lower = key.toLowerCase();
                 const found = (devicesList || []).find(it => ((it.name || '').replace(/\.json$/i, '').toLowerCase() === lower));
@@ -440,8 +757,12 @@ async function loadDevices(limit = 0) {
                         codename: ov.codename || base.codename || key,
                         device: ov.model || base.device || base.model || base.device,
                         model: ov.model || base.model || base.device || '',
+                        // NEW: ensure OEM override is applied
+                        oem: ov.oem || base.oem || base.vendor || base.brand || '',
                         maintainer: ov.maintainer || base.maintainer || base.maintainer,
-                        image: ov.image || base.image || (ov.codename ? `images/devices/${ov.codename}.webp` : `images/devices/${key}.webp`)
+                        image: ov.image || base.image || (ov.codename ? `images/devices/${ov.codename}.webp` : `images/devices/${key}.webp`),
+                        // NEW: carry aliases into the entry so the card can expose them
+                        aliases: Array.isArray(ov.aliases) ? ov.aliases : (Array.isArray(base.aliases) ? base.aliases : [])
                     });
                     respArr[0] = merged;
                     return { ok: true, name: found.name || (key + '.json'), data: { response: respArr }, rawUrl: found.rawUrl || found.rawUrl };
@@ -452,7 +773,9 @@ async function loadDevices(limit = 0) {
                     oem: ov.oem || '',
                     device: ov.model || '',
                     codename: ov.codename || key,
-                    image: ov.image || `images/devices/${key}.webp`
+                    image: ov.image || `images/devices/${key}.webp`,
+                    // NEW: include aliases on synthesized entries too
+                    aliases: Array.isArray(ov.aliases) ? ov.aliases : []
                 };
                 return { ok: true, name: key + '.json', data: { response: [minimal] } };
             });
@@ -603,6 +926,65 @@ function ensureMarqueeStyles() {
         article:hover .marquee-inner { animation-play-state: paused !important; }
         /* Pause when IO marks it (no inline style writes) */
         .marquee-inner.is-paused { animation-play-state: paused; }
+    `;
+    document.head.appendChild(style);
+}
+
+// NEW: inject uniform card styles once
+function ensureUniformCardStyles() {
+    if (document.getElementById('uniform-card-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'uniform-card-styles';
+    style.textContent = `
+        /* Center-align the devices container and grid */
+        .devices-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .devices-container .grid.responsive {
+            justify-content: center;
+            max-width: 100%;
+        }
+        
+        /* Normalize card layout for consistent aspect ratio and fill behavior */
+        .devices-container article[data-codename] {
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            aspect-ratio: 3 / 5;           /* Card ratio: width:height = 3:5 */
+            overflow: hidden;               /* Prevent overflow when content is tall */
+        }
+        /* Image takes remaining vertical space; fills and crops nicely */
+        .devices-container article[data-codename] > img {
+            flex: 1 1 auto;
+            min-height: 0;
+            width: 100%;
+            height: auto;                  /* Height driven by flex grow */
+            object-fit: cover;
+            display: block;
+        }
+        /* Fallback icon should also fill remaining area if image fails */
+        .devices-container article[data-codename] > i.extra-large {
+            flex: 1 1 auto;
+            min-height: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Content is auto-height; image expands when there's room */
+        .devices-container article[data-codename] > .padding {
+            display: flex;
+            flex-direction: column;
+            flex: 0 0 auto;
+        }
+        /* Keep last row aligned to the bottom within content block when applicable */
+        .devices-container article[data-codename] > .padding .small-margin:last-child {
+            margin-top: auto;
+        }
     `;
     document.head.appendChild(style);
 }
@@ -761,7 +1143,36 @@ document.body.appendChild(deviceDialog);
 // Show device details in a modal dialog
 async function showDeviceDetails(codename) {
     try {
-        // Fetch device data (prefer local cache)
+        // NEW: resolve unified parent + aliases via device_db.json
+        let rootCode = codename;
+        let unifiedAliases = [];
+        try {
+            const dbResp0 = await fetch('data/device_db.json', { cache: 'no-cache' }).catch(() => null);
+            if (dbResp0 && dbResp0.ok) {
+                const db0 = await dbResp0.json();
+                const ovAll = (db0 && db0.overrides) || {};
+                const keyLC = (codename || '').toLowerCase();
+                if (ovAll[keyLC] && Array.isArray(ovAll[keyLC].aliases) && ovAll[keyLC].aliases.length) {
+                    // current codename is parent; keep aliases
+                    unifiedAliases = ovAll[keyLC].aliases.slice();
+                    // ensure rootCode keeps original case of the parent key if present
+                    const parentExact = Object.keys(ovAll).find(k => k.toLowerCase() === keyLC);
+                    if (parentExact) rootCode = parentExact;
+                } else {
+                    // find which parent includes this codename as an alias
+                    const parent = Object.keys(ovAll).find(k => {
+                        const arr = ovAll[k] && Array.isArray(ovAll[k].aliases) ? ovAll[k].aliases : [];
+                        return arr.map(a => String(a).toLowerCase()).includes(keyLC);
+                    });
+                    if (parent) {
+                        rootCode = parent;
+                        unifiedAliases = (ovAll[parent].aliases || []).slice();
+                    }
+                }
+            }
+        } catch (e) { /* ignore */ }
+
+        // Fetch device data (prefer local cache) using parent/rootCode
         let deviceData = null;
         try {
             const localResp = await fetch('data/devices.json');
@@ -770,28 +1181,28 @@ async function showDeviceDetails(codename) {
                 deviceData = list.find(item => {
                     if (!item) return false;
                     const responses = (item.data && Array.isArray(item.data.response)) ? item.data.response : (item.data ? [item.data] : []);
-                    if ((item.name || '').replace(/\.json$/i, '').toLowerCase() === codename.toLowerCase()) return true;
+                    if ((item.name || '').replace(/\.json$/i, '').toLowerCase() === String(rootCode).toLowerCase()) return true;
                     return responses.some(d => {
                         if (!d) return false;
                         const candidates = [d.codename, d.device, d.id, item.name];
-                        return candidates.some(c => (c || '').toString().toLowerCase() === codename.toLowerCase());
+                        return candidates.some(c => (c || '').toString().toLowerCase() === String(rootCode).toLowerCase());
                     });
                 });
             }
         } catch (e) { /* ignore and fallback */ }
 
         if (!deviceData) {
-            const response = await fetch(`https://raw.githubusercontent.com/AlphaDroid-devices/OTA/master/${codename}.json`);
+            const response = await fetch(`https://raw.githubusercontent.com/AlphaDroid-devices/OTA/master/${rootCode}.json`);
             if (!response.ok) throw new Error('Device info not found');
             const rawData = await response.json();
-            deviceData = { data: rawData, rawUrl: `https://raw.githubusercontent.com/AlphaDroid-devices/OTA/master/${codename}.json` };
+            deviceData = { data: rawData, rawUrl: `https://raw.githubusercontent.com/AlphaDroid-devices/OTA/master/${rootCode}.json` };
         }
 
         // Normalize
         let d = null;
         if (deviceData && deviceData.data) {
             if (Array.isArray(deviceData.data.response) && deviceData.data.response.length > 0) {
-                d = deviceData.data.response.find(item => ((item.codename || item.device || '') + '').toLowerCase() === codename.toLowerCase()) || deviceData.data.response[0];
+                d = deviceData.data.response.find(item => ((item.codename || item.device || '') + '').toLowerCase() === String(rootCode).toLowerCase()) || deviceData.data.response[0];
             } else {
                 d = deviceData.data;
             }
@@ -799,27 +1210,27 @@ async function showDeviceDetails(codename) {
             d = deviceData;
         }
 
-        // Apply overrides if available
+        // Apply overrides if available (use parent/rootCode)
         try {
             const dbResp = await fetch('data/device_db.json', { cache: 'no-cache' }).catch(() => null);
             if (dbResp && dbResp.ok) {
                 const db = await dbResp.json();
-                const ov = (db && db.overrides) ? db.overrides[codename.toLowerCase()] : null;
+                const ov = (db && db.overrides) ? db.overrides[String(rootCode).toLowerCase()] : null;
                 if (ov) {
                     d = d || {};
-                    d.codename = ov.codename || d.codename || codename;
+                    d.codename = ov.codename || d.codename || rootCode;
                     d.oem = ov.oem || d.oem;
                     d.model = ov.model || d.model || d.device || '';
                     d.device = ov.model || d.device || d.model || '';
                     if (ov.maintainer) d.maintainer = ov.maintainer;
-                    if (ov.image) d.image = ov.image; else if (!d.image) d.image = `images/devices/${d.codename || codename}.webp`;
+                    if (ov.image) d.image = ov.image; else if (!d.image) d.image = `images/devices/${d.codename || rootCode}.webp`;
                 }
             }
         } catch (e) { /* ignore */ }
 
-        const displayName = escapeHtml(d.name || d.model || codename);
-        const deviceCodename = escapeHtml(d.codename || d.device || codename);
-        const modalImageUrl = d.image || `images/devices/${(d.codename || codename)}.webp`;
+        const displayName = escapeHtml(d.name || d.model || rootCode);
+        const deviceCodename = escapeHtml(d.codename || d.device || rootCode);
+        const modalImageUrl = d.image || `images/devices/${(d.codename || rootCode)}.webp`;
 
         // Variants
         const variants = (deviceData && deviceData.data && Array.isArray(deviceData.data.response) && deviceData.data.response.length > 0)
@@ -888,13 +1299,40 @@ async function showDeviceDetails(codename) {
             return `<nav class="group connected">${buttons}</nav>`;
         }
 
+        // NEW: build unified codenames section (parent first)
+        const allCodes = [String(rootCode)].concat(
+            (unifiedAliases || []).filter(a => String(a).toLowerCase() !== String(rootCode).toLowerCase())
+        );
+        let codeTabsHtml = '';
+        if (allCodes.length > 1) {
+            const btns = allCodes.map((c, i, arr) => {
+                let cls = 'chip small ' + (i === 0 ? 'left-round' : (i === arr.length - 1 ? 'right-round' : 'no-round'));
+                return `<button class="${cls}" disabled><span>${escapeHtml(c)}</span></button>`;
+            }).join('');
+            codeTabsHtml = `
+                <div class="s12">
+                    <div class="row">
+                        <i>merge</i>
+                        <div class="max">
+                            <div class="bold">Unified codenames</div>
+                            <div>
+                                <nav class="group connected" id="codename-tabs" style="display:flex; flex-wrap:wrap; gap:6px; white-space:normal;">
+                                    ${btns}
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         // Render modal
         deviceDialog.innerHTML = `
             <h5>${displayName}</h5>
             <div class="grid">
                 <div class="s12 m6">
                     <div class="row middle-align">
-                        <i>smartphone</i> 
+                        <i>smartphone</i>
                         <div class="max">
                             <div class="bold">Codename</div>
                             <div>${deviceCodename}</div>
@@ -944,6 +1382,8 @@ async function showDeviceDetails(codename) {
                     </div>
                 </div>
 
+                ${codeTabsHtml}
+
                 <div class="s12">
                     <div class="row">
                         <i>tag</i>
@@ -985,7 +1425,7 @@ async function showDeviceDetails(codename) {
             function updateVariantDisplay() {
                 const entry = getEntryForIndex(selectedIndex);
                 const btn = deviceDialog.querySelector('#device-download');
-                const url = entry.download || entry.url || entry.file || entry.filename || deviceData.rawUrl || `https://sourceforge.net/projects/alphadroid-project/files/${codename}`;
+                const url = entry.download || entry.url || entry.file || entry.filename || deviceData.rawUrl || `https://sourceforge.net/projects/alphadroid-project/files/${rootCode}`;
                 if (btn) btn.onclick = () => window.open(url, '_blank');
 
                 if (btn) {
@@ -1089,13 +1529,15 @@ function setupDeviceSearch() {
         }
         cards.forEach(c => {
             const codename = c.getAttribute('data-codename') || '';
-            const oem = c.getAttribute('data-oem') || '';
+            // Compare OEMs case-insensitively while preserving caps elsewhere
+            const oem = (c.getAttribute('data-oem') || '').toLowerCase();
             const model = c.getAttribute('data-model') || '';
+            const aliases = c.getAttribute('data-aliases') || '';
             if (oemFilter && oem !== oemFilter) {
                 c.style.display = 'none';
                 return;
             }
-            const hay = (codename + ' ' + oem + ' ' + model).toLowerCase();
+            const hay = (codename + ' ' + oem + ' ' + model + ' ' + aliases).toLowerCase();
             const match = tokens.every(t => hay.includes(t));
             c.style.display = match ? '' : (tokens.length ? 'none' : '');
         });
@@ -1127,7 +1569,17 @@ function buildOemFilterChips() {
     const wrap = document.getElementById('oem-filter-chips');
     if (!wrap) return;
     const cards = Array.from(document.querySelectorAll('.devices-container article[data-oem]'));
-    const oems = Array.from(new Set(cards.map(c => c.getAttribute('data-oem') || '').filter(Boolean))).sort();
+
+    // De-duplicate case-insensitively but keep original capitalization (first seen)
+    const oemMap = new Map();
+    cards.forEach(c => {
+        const raw = (c.getAttribute('data-oem') || '').trim();
+        if (!raw) return;
+        const key = raw.toLowerCase();
+        if (!oemMap.has(key)) oemMap.set(key, raw);
+    });
+    const oems = Array.from(oemMap.values()).sort((a, b) => a.localeCompare(b));
+
     if (!oems.length) { wrap.innerHTML=''; return; }
     wrap.innerHTML = '';
 
@@ -1158,6 +1610,7 @@ function buildOemFilterChips() {
         const btn = document.createElement('button');
         btn.textContent = label;
         btn.className = 'small border';
+        // Keep original caps in data-oem for display; comparisons are lowercased elsewhere
         if (dataOEM) btn.setAttribute('data-oem', dataOEM); else btn.setAttribute('data-all', '');
         btn.addEventListener('click', () => {
             const isActive = btn.classList.contains('primary');
@@ -1165,15 +1618,12 @@ function buildOemFilterChips() {
             allButtons.forEach(b => { b.classList.remove('fill','primary'); if (!b.hasAttribute('data-all')) b.classList.add('border'); });
             if (btn.hasAttribute('data-all')) {
                 if (!isActive) { btn.classList.remove('border'); btn.classList.add('fill','primary'); }
-                else { // keep All active always
-                    btn.classList.add('fill','primary'); btn.classList.remove('border');
-                }
+                else { btn.classList.add('fill','primary'); btn.classList.remove('border'); }
             } else {
                 if (!isActive) {
                     btn.classList.remove('border');
                     btn.classList.add('fill','primary');
                 } else {
-                    // revert to All
                     const all = nav.querySelector('button[data-all]');
                     if (all) { all.classList.add('fill','primary'); all.classList.remove('border'); }
                 }
@@ -1189,7 +1639,7 @@ function buildOemFilterChips() {
     allBtn.classList.add('fill','primary');
     nav.appendChild(allBtn);
 
-    // OEM buttons
+    // OEM buttons with original capitalization
     oems.forEach(o => nav.appendChild(makeButton(o, o)));
 
     rebuildRoundClasses();
@@ -1237,4 +1687,31 @@ function buildSiteFooter() {
             </div>
         </div>`;
     document.body.appendChild(footer);
+}
+
+// NEW: equalize all device card heights to the tallest card (skip when aspect-ratio is supported)
+function equalizeDeviceCardHeights(root) {
+    // If aspect-ratio is supported, let CSS handle uniform heights.
+    if (CSS && typeof CSS.supports === 'function' && CSS.supports('aspect-ratio: 3 / 5')) {
+        const cards = (root || document).querySelectorAll('article[data-codename]');
+        cards.forEach(c => { c.style.height = ''; }); // ensure no fixed heights override aspect-ratio
+        return;
+    }
+
+    const cards = (root || document).querySelectorAll('article[data-codename]');
+    if (!cards.length) return;
+
+    // Reset heights to recompute correctly
+    cards.forEach(c => { c.style.height = 'auto'; });
+
+    // Compute tallest
+    let maxH = 0;
+    cards.forEach(c => {
+        const h = c.getBoundingClientRect().height || c.offsetHeight || 0;
+        if (h > maxH) maxH = h;
+    });
+    if (maxH <= 0) return;
+
+    // Apply tallest height
+    cards.forEach(c => { c.style.height = `${Math.ceil(maxH)}px`; });
 }
