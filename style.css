@@ -118,8 +118,8 @@
         /* Screenshots carousel */
 #screenshots {
 	/* Shot size variables for consistent centering */
-	--shot-w: 280px;
-	--shot-h: 560px;
+	--shot-w: 240px;
+	--shot-h: 560px; /* 240 * 21 / 9 = 560 */
 }
 #screenshots h4 {
 	color: #fff;
@@ -186,6 +186,7 @@
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+	aspect-ratio: 9 / 21;
 	border-radius: 24px;
 	display: block;
 	box-shadow:
@@ -275,9 +276,9 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-	#screenshots .carousel { height: 420px; }
+	#screenshots .carousel { height: 336px; }
 	/* Smaller shot size; centering remains correct via variables */
-	#screenshots { --shot-w: 200px; --shot-h: 420px; }
+	#screenshots { --shot-w: 144px; --shot-h: 336px; } /* 144 * 21 / 9 = 336 */
 	/* img already uses 100% of slide */
 }
 
