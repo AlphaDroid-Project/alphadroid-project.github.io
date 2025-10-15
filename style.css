@@ -1,5 +1,5 @@
 :root {
-            /* Material You dynamic color system */
+            /* Material You dynamic color system - will be overridden by config.js */
             --primary: #6750A4;
             --on-primary: #FFFFFF;
             --primary-container: #EADDFF;
@@ -27,6 +27,7 @@
 
         @media (prefers-color-scheme: dark) {
             :root {
+                /* Dark mode colors - will be overridden by config.js */
                 --primary: #D0BCFF;
                 --on-primary: #381E72;
                 --primary-container: #4F378B;
@@ -52,7 +53,6 @@
         }
 
         * {
-
             font-family: 'Roboto Flex', sans-serif;
         }
         html {
@@ -282,50 +282,10 @@
 	/* img already uses 100% of slide */
 }
 
-/* Large desktop */
-@media (max-width: 1400px) {
-    #app {
-        padding-left: 8em;
-        padding-right: 8em;
-    }
-}
-
-/* Desktop/tablet */
-@media (max-width: 1100px) {
-    #app {
-        padding-left: 4em;
-        padding-right: 4em;
-    }
-}
-
-/* Tablet */
-@media (max-width: 900px) {
-    #app {
-        padding-left: 2em;
-        padding-right: 2em;
-    }
-}
-
-/* Large mobile */
-@media (max-width: 700px) {
-    #app {
-        padding-left: 1em;
-        padding-right: 1em;
-    }
-}
-
-/* Mobile */
-@media (max-width: 500px) {
-    #app {
-        padding-left: 0.5em;
-        padding-right: 0.5em;
-    }
-}
-
-/* Smallest screens */
-@media (max-width: 350px) {
-    #app {
-        padding-left: 0.25em;
-        padding-right: 0.25em;
-    }
-}
+/* Responsive app padding - consolidated breakpoints */
+@media (max-width: 1400px) { #app { padding-left: 8em; padding-right: 8em; } }
+@media (max-width: 1100px) { #app { padding-left: 4em; padding-right: 4em; } }
+@media (max-width: 900px) { #app { padding-left: 2em; padding-right: 2em; } }
+@media (max-width: 700px) { #app { padding-left: 1em; padding-right: 1em; } }
+@media (max-width: 500px) { #app { padding-left: 0.5em; padding-right: 0.5em; } }
+@media (max-width: 350px) { #app { padding-left: 0.25em; padding-right: 0.25em; } }

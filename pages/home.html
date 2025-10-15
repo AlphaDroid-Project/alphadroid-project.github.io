@@ -1,7 +1,7 @@
 <!-- Features Section -->
 <section id="features" class="container large-padding">
-	<h4 class="center-align">Powerful Features</h4>
-	<div class="grid medium-space">
+	<h4 class="center-align" id="features-title">Powerful Features</h4>
+	<div class="grid medium-space" id="features-grid">
 		<div class="s12 m6 l4">
 			<article class="card padding feature-card">
 				<div class="row no-wrap middle-align">
@@ -85,9 +85,9 @@
 
 <!-- Screenshots Section -->
 <section id="screenshots" class="container large-padding">
-	<h4 class="center-align">Screenshots</h4>
+	<h4 class="center-align" id="screenshots-title">Screenshots</h4>
 
-	<div class="carousel smooth" role="region" aria-label="Screenshots carousel" data-gap-min="16" data-gap-max="72" data-gap-factor="0.06" data-start-index="0">
+	<div class="carousel smooth" role="region" aria-label="Screenshots carousel" id="screenshots-carousel" data-gap-min="16" data-gap-max="72" data-gap-factor="0.06" data-start-index="0">
 		<div class="nav">
 			<button aria-label="Previous" data-action="prev">
 				<i>chevron_left</i>
@@ -99,25 +99,25 @@
 
 		<div class="carousel-track">
 			<div class="carousel-slide">
-				<img loading="lazy" src="../images/Screenshot_20250912-105002_AlphaDroid Launcher.png" alt="Home screen" />
+				<img loading="lazy" decoding="async" src="../images/Screenshot_20250912-105002_AlphaDroid Launcher.png" alt="Home screen" />
 			</div>
 			<div class="carousel-slide">
-				<img loading="lazy" src="../images/Screenshot_20250912-105004_System UI.png" alt="Quick Settings" />
+				<img loading="lazy" decoding="async" src="../images/Screenshot_20250912-105004_System UI.png" alt="Quick Settings" />
 			</div>
 			<div class="carousel-slide">
-				<img loading="lazy" src="../images/Screenshot_20250912-105017_AlphaDroid Launcher.png" alt="Launcher Settings" />
+				<img loading="lazy" decoding="async" src="../images/Screenshot_20250912-105017_AlphaDroid Launcher.png" alt="Launcher Settings" />
 			</div>
 			<div class="carousel-slide">
-				<img loading="lazy" src="../images/Screenshot_20250912-105031_AlphaDroid Launcher.png" alt="App Drawers" />
+				<img loading="lazy" decoding="async" src="../images/Screenshot_20250912-105031_AlphaDroid Launcher.png" alt="App Drawers" />
 			</div>
 			<div class="carousel-slide">
-				<img loading="lazy" src="../images/Screenshot_20250912-105052_Settings.png" alt="Settings" />
+				<img loading="lazy" decoding="async" src="../images/Screenshot_20250912-105052_Settings.png" alt="Settings" />
 			</div>
 			<div class="carousel-slide">
-				<img loading="lazy" src="../images/Screenshot_20250912-105101_Settings.png" alt="Alpha Settings" />
+				<img loading="lazy" decoding="async" src="../images/Screenshot_20250912-105101_Settings.png" alt="Alpha Settings" />
 			</div>
 			<div class="carousel-slide">
-				<img loading="lazy" src="../images/Screenshot_20250912-105235_Settings.png" alt="About phone" />
+				<img loading="lazy" decoding="async" src="../images/Screenshot_20250912-105235_Settings.png" alt="About phone" />
 			</div>
 		</div>
 
@@ -128,9 +128,83 @@
 <!-- Download Section -->
 <section class="download large-padding" id="download">
 	<div class="container">
-		<h4 class="center-align large-padding">Download for Your Device</h4>
+		<h4 class="center-align large-padding" id="download-title">Download for Your Device</h4>
 		<div class="devices-container" aria-live="polite">
 			<!-- dynamic device cards inserted here -->
 		</div>
 	</div>
 </section>
+
+<script>
+// Update content from configuration
+window.addEventListener('configReady', function(event) {
+    const config = event.detail.config;
+    
+    // Update features section
+    const features = config?.content?.features;
+    if (features) {
+        const titleEl = document.getElementById('features-title');
+        if (titleEl && features.title) {
+            titleEl.textContent = features.title;
+        }
+        
+        if (features.items && Array.isArray(features.items)) {
+            const gridEl = document.getElementById('features-grid');
+            if (gridEl) {
+                gridEl.innerHTML = features.items.map(item => `
+                    <div class="s12 m6 l4">
+                        <article class="card padding feature-card">
+                            <div class="row no-wrap middle-align">
+                                <div class="surface round small-padding" style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;">
+                                    <i class="large">${item.icon || 'info'}</i>
+                                </div>
+                                <div class="max small-margin-left">
+                                    <h5 class="no-margin">${item.title || ''}</h5>
+                                    <p class="small-text">${item.description || ''}</p>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                `).join('');
+            }
+        }
+    }
+    
+    // Update screenshots section
+    const screenshots = config?.content?.screenshots;
+    if (screenshots) {
+        const titleEl = document.getElementById('screenshots-title');
+        if (titleEl && screenshots.title) {
+            titleEl.textContent = screenshots.title;
+        }
+        
+        const carouselEl = document.getElementById('screenshots-carousel');
+        if (carouselEl && screenshots.carousel) {
+            carouselEl.setAttribute('data-gap-min', screenshots.carousel.gapMin || 16);
+            carouselEl.setAttribute('data-gap-max', screenshots.carousel.gapMax || 72);
+            carouselEl.setAttribute('data-gap-factor', screenshots.carousel.gapFactor || 0.06);
+            carouselEl.setAttribute('data-start-index', screenshots.carousel.startIndex || 0);
+        }
+        
+        if (screenshots.images && Array.isArray(screenshots.images)) {
+            const trackEl = carouselEl?.querySelector('.carousel-track');
+            if (trackEl) {
+                trackEl.innerHTML = screenshots.images.map(img => `
+                    <div class="carousel-slide">
+                        <img loading="lazy" decoding="async" src="${img.src}" alt="${img.alt}" />
+                    </div>
+                `).join('');
+            }
+        }
+    }
+    
+    // Update download section
+    const download = config?.content?.download;
+    if (download) {
+        const titleEl = document.getElementById('download-title');
+        if (titleEl && download.title) {
+            titleEl.textContent = download.title;
+        }
+    }
+});
+</script>

@@ -1,42 +1,37 @@
-// Preload important fragments/data to speed up SPA navigation and reduce GitHub API pressure
+// Optimized preloading with better error handling and resource prioritization
 (async function () {
   try {
     window.__preloadedPages = window.__preloadedPages || {};
     window.__preloadedData = window.__preloadedData || null;
 
-    // Prefetch devices fragment
-    try {
-      const resp = await fetch('pages/devices.html', { cache: 'no-cache' });
-      if (resp && resp.ok) {
-        const txt = await resp.text();
-        // store under both the fragment path and the routed paths
-        window.__preloadedPages['pages/devices.html'] = txt;
-        window.__preloadedPages['/devices'] = txt;
-        window.__preloadedPages['/download'] = txt;
-      }
-    } catch (e) {
-      // ignore
-      console.info('pages/devices.html preload failed', e);
-    }
+    // Prefetch critical resources in parallel with priority
+    const preloadPromises = [
+      fetch('pages/devices.html', { cache: 'no-cache' })
+        .then(resp => resp.ok ? resp.text() : null)
+        .then(txt => {
+          if (txt) {
+            window.__preloadedPages['pages/devices.html'] = txt;
+            window.__preloadedPages['/devices'] = txt;
+            window.__preloadedPages['/download'] = txt;
+          }
+        })
+        .catch(() => {}),
+      
+      fetch('data/devices.json', { cache: 'no-cache' })
+        .then(resp => resp.ok ? resp.json() : null)
+        .then(data => {
+          if (data) window.__preloadedData = data;
+        })
+        .catch(() => {})
+    ];
 
-    // Prefetch aggregated devices JSON (if present)
-    try {
-      const resp = await fetch('data/devices.json', { cache: 'no-cache' });
-      if (resp && resp.ok) {
-        window.__preloadedData = await resp.json();
-      }
-    } catch (e) {
-      console.info('data/devices.json preload failed', e);
-    }
+    await Promise.allSettled(preloadPromises);
 
-    // Optionally populate Cache API so normal fetch() benefits from cached responses
+    // Cache API population (non-blocking)
     if ('caches' in window) {
-      try {
-        const cache = await caches.open('preload-v1');
-        await cache.addAll(['pages/devices.html', 'data/devices.json'].filter(Boolean)).catch(() => {});
-      } catch (e) {
-        // ignore caching errors
-      }
+      caches.open('preload-v1')
+        .then(cache => cache.addAll(['pages/devices.html', 'data/devices.json']))
+        .catch(() => {});
     }
   } catch (e) {
     console.error('preload bootstrap failed', e);
@@ -205,18 +200,21 @@
       startX = null;
     });
 
-    // Recompute spacing on resize
-    if ('ResizeObserver' in window && carousel) {
-      const ro = new ResizeObserver(() => {
+    // Optimized resize handling with debouncing
+    let resizeTimeout;
+    const handleResize = () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
         computeLayoutVars();
         update();
-      });
+      }, 100);
+    };
+
+    if ('ResizeObserver' in window && carousel) {
+      const ro = new ResizeObserver(handleResize);
       ro.observe(carousel);
     } else {
-      window.addEventListener('resize', () => {
-        computeLayoutVars();
-        update();
-      }, { passive: true });
+      window.addEventListener('resize', handleResize, { passive: true });
     }
 
     // React to DOM changes: adding/removing .carousel-slide will rebuild slides and dots

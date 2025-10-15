@@ -1,0 +1,269 @@
+{
+  "site": {
+    "title": "AlphaDroid ROM | Next-Generation Android Experience",
+    "description": "AlphaDroid is a custom ROM based on LineageOS/crDroid, with a new look and some extra features and optimizations.",
+    "favicon": "images/fav.ico",
+    "logo": {
+      "path": "images/logo.jpg",
+      "alt": "AlphaDroid"
+    }
+  },
+  "theme": {
+    "colors": {
+      "primary": "#6750A4",
+      "onPrimary": "#FFFFFF",
+      "primaryContainer": "#EADDFF",
+      "onPrimaryContainer": "#21005D",
+      "secondary": "#625B71",
+      "onSecondary": "#FFFFFF",
+      "secondaryContainer": "#E8DEF8",
+      "onSecondaryContainer": "#1D192B",
+      "tertiary": "#7D5260",
+      "onTertiary": "#FFFFFF",
+      "surface": "#FEF7FF",
+      "onSurface": "#1D1B20",
+      "surfaceVariant": "#E7E0EC",
+      "onSurfaceVariant": "#49454F",
+      "outline": "#79747E",
+      "surfaceRgb": "254, 247, 255"
+    },
+    "darkMode": {
+      "primary": "#D0BCFF",
+      "onPrimary": "#381E72",
+      "primaryContainer": "#4F378B",
+      "onPrimaryContainer": "#EADDFF",
+      "secondary": "#CCC2DC",
+      "onSecondary": "#332D41",
+      "secondaryContainer": "#4A4458",
+      "onSecondaryContainer": "#E8DEF8",
+      "tertiary": "#EFB8C8",
+      "onTertiary": "#492532",
+      "surface": "#141218",
+      "onSurface": "#E6E0E9",
+      "surfaceVariant": "#49454F",
+      "onSurfaceVariant": "#CAC4D0",
+      "outline": "#938F99",
+      "surfaceRgb": "20, 18, 24"
+    },
+    "animation": {
+      "speed": "0.4s",
+      "borderRadius": "24px",
+      "elevation": "0 3px 6px rgba(0,0,0,0.1)",
+      "hoverElevation": "0 8px 16px rgba(0,0,0,0.15)",
+      "darkElevation": "0 6px 12px rgba(0,0,0,0.3)",
+      "darkHoverElevation": "0 12px 24px rgba(0,0,0,0.4)"
+    }
+  },
+  "navigation": {
+    "routes": {
+      "#": "pages/home.html",
+      "#home": "pages/home.html",
+      "#features": "pages/home.html",
+      "#screenshots": "pages/home.html",
+      "#devices": "pages/devices.html",
+      "#download": "pages/home.html",
+      "#about": "pages/about.html",
+      "#contact": "pages/contact.html"
+    },
+    "sections": ["#features", "#screenshots", "#download"],
+    "menu": {
+      "desktop": [
+        { "id": "nav-home-desktop", "label": "Home", "icon": "home", "route": "#" },
+        { "id": "nav-features-desktop", "label": "Features", "icon": "checklist", "route": "#features" },
+        { "id": "nav-screenshots-desktop", "label": "Screenshots", "icon": "smartphone", "route": "#screenshots" }
+      ],
+      "mobile": [
+        { "id": "nav-home-mobile", "label": "Home", "icon": "home", "route": "#" },
+        { "id": "nav-features-mobile", "label": "Features", "icon": "checklist", "route": "#features" },
+        { "id": "nav-screenshots-mobile", "label": "Screenshots", "icon": "smartphone", "route": "#screenshots" }
+      ]
+    },
+    "fab": {
+      "enabled": true,
+      "icon": "download",
+      "label": "Download",
+      "route": "#devices"
+    }
+  },
+  "content": {
+    "hero": {
+      "title": "Experience the Future of Android",
+      "subtitle": "AlphaDroid is a custom ROM based on LineageOS/crDroid, with a new look and some extra features and optimizations.",
+      "buttons": [
+        {
+          "text": "Install Now",
+          "icon": "rocket_launch",
+          "route": "#download",
+          "style": "primary"
+        },
+        {
+          "text": "View Features",
+          "icon": "visibility",
+          "route": "#features",
+          "style": "secondary"
+        }
+      ]
+    },
+    "features": {
+      "title": "Powerful Features",
+      "items": [
+        {
+          "title": "Material You Design",
+          "description": "Experience Google's latest design language with dynamic theming that adapts to your wallpaper.",
+          "icon": "palette"
+        },
+        {
+          "title": "Blazing Performance",
+          "description": "System enhancements deliver faster app launches and smoother UI.",
+          "icon": "speed"
+        },
+        {
+          "title": "Extended Battery Life",
+          "description": "Advanced power management provides longer battery life.",
+          "icon": "battery_charging_full"
+        },
+        {
+          "title": "Deep Customization",
+          "description": "Tailor every aspect of your device with our powerful customization engine.",
+          "icon": "tune"
+        },
+        {
+          "title": "Enhanced Privacy",
+          "description": "Take control of your data with granular app permissions and privacy dashboard.",
+          "icon": "enhanced_encryption"
+        },
+        {
+          "title": "Monthly Updates",
+          "description": "Regular security patches and feature updates keep your device current and secure.",
+          "icon": "update"
+        }
+      ]
+    },
+    "screenshots": {
+      "title": "Screenshots",
+      "carousel": {
+        "gapMin": 16,
+        "gapMax": 72,
+        "gapFactor": 0.06,
+        "startIndex": 0,
+        "shotWidth": 240,
+        "shotHeight": 560,
+        "mobileShotWidth": 144,
+        "mobileShotHeight": 336
+      },
+      "images": [
+        {
+          "src": "../images/Screenshot_20250912-105002_AlphaDroid Launcher.png",
+          "alt": "Home screen"
+        },
+        {
+          "src": "../images/Screenshot_20250912-105004_System UI.png",
+          "alt": "Quick Settings"
+        },
+        {
+          "src": "../images/Screenshot_20250912-105017_AlphaDroid Launcher.png",
+          "alt": "Launcher Settings"
+        },
+        {
+          "src": "../images/Screenshot_20250912-105031_AlphaDroid Launcher.png",
+          "alt": "App Drawers"
+        },
+        {
+          "src": "../images/Screenshot_20250912-105052_Settings.png",
+          "alt": "Settings"
+        },
+        {
+          "src": "../images/Screenshot_20250912-105101_Settings.png",
+          "alt": "Alpha Settings"
+        },
+        {
+          "src": "../images/Screenshot_20250912-105235_Settings.png",
+          "alt": "About phone"
+        }
+      ]
+    },
+    "download": {
+      "title": "Download for Your Device"
+    },
+    "devices": {
+      "title": "Devices",
+      "subtitle": "Browse available devices below.",
+      "searchPlaceholder": "Search devices (OEM, model, codename)"
+    }
+  },
+  "api": {
+    "github": {
+      "repo": "AlphaDroid-devices/OTA",
+      "apiUrl": "https://api.github.com/repos/AlphaDroid-devices/OTA/contents/",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/master/"
+    },
+    "localData": {
+      "devicesJson": "data/devices.json",
+      "deviceDbJson": "data/device_db.json"
+    }
+  },
+  "ui": {
+    "deviceLimits": {
+      "homePreview": 3,
+      "fullList": 0
+    },
+    "cache": {
+      "maxSize": 10,
+      "ttl": 300000
+    },
+    "animations": {
+      "fadeDuration": 400,
+      "sectionFadeDuration": 200,
+      "scrollDebounce": 100,
+      "searchDebounce": 1000
+    },
+    "brandColors": {
+      "xiaomi": "#FF6900",
+      "google": "#4285F4",
+      "pixel": "#4285F4",
+      "oneplus": "#EB0029",
+      "nothing": "#000000",
+      "samsung": "#1428A0",
+      "motorola": "#E60012",
+      "huawei": "#D70015",
+      "oppo": "#00B388",
+      "vivo": "#1E90FF",
+      "realme": "#F3D04E",
+      "sony": "#00A3E0",
+      "lg": "#A50034",
+      "nokia": "#124191",
+      "asus": "#005BAC"
+    }
+  },
+  "social": {
+    "telegram": {
+      "chat": "https://t.me/alphadroid_chat",
+      "releases": "https://t.me/alphadroid_releases"
+    },
+    "github": "https://github.com/alphadroid-project",
+    "sourceforge": "https://sourceforge.net/projects/alphadroid-project/"
+  },
+  "footer": {
+    "description": "The next-generation Android experience with Material You design, performance optimizations and extensive customization.",
+    "links": {
+      "resources": [
+        { "text": "Installation Guide", "url": "https://t.me/alphadroid_chat" },
+        { "text": "FAQ", "url": "https://t.me/alphadroid_chat" },
+        { "text": "Bug Tracker", "url": "https://t.me/alphadroid_chat" }
+      ],
+      "community": [
+        { "text": "Telegram Group", "url": "https://t.me/alphadroid_chat" },
+        { "text": "Releases Channel", "url": "https://t.me/alphadroid_releases" },
+        { "text": "GitHub Org", "url": "https://github.com/alphadroid-project" },
+        { "text": "SourceForge", "url": "https://sourceforge.net/projects/alphadroid-project/" }
+      ]
+    },
+    "copyright": {
+      "text": "AlphaDroid Project. Open-source project not affiliated with Google or Android. All trademarks belong to their owners.",
+      "credits": [
+        { "text": "Pacuka", "url": "https://t.me/Pacuka" },
+        { "text": "Naoko Shoto", "url": "https://github.com/naokoshoto" }
+      ]
+    }
+  }
+}

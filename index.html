@@ -5,21 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AlphaDroid ROM | Next-Generation Android Experience</title>
     <link rel="shortcut icon" href="images/fav.ico" type="image/x-icon">
+    <script src="config.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Symbols+2&family=Noto+Sans+Symbols:wght@100..900&family=Roboto+Flex:opsz,slnt,wdth,wght,GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC@8..144,-10..0,25..151,100..1000,-200..150,27..175,323..603,25..135,649..854,-305..-98,560..788,416..570,528..760&display=swap&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,0,0" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,slnt,wdth,wght@8..144,-10..0,25..151,100..1000&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,0,0&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/beercss@3.11.33/dist/cdn/beer.min.css" rel="stylesheet" />
-
     <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.11.33/dist/cdn/beer.min.js"></script>
-
-    <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.2/dist/cdn/material-dynamic-colors.min.js"></script>
     <style>
-        /* Push the footer behind everything and disable interaction */
-        footer.s.fixed.bottom-align.right-align {
-            z-index: -1;
-            pointer-events: none;
+        /* Critical CSS - Above the fold styles */
+        :root {
+            --primary: #6750A4;
+            --on-primary: #FFFFFF;
+            --surface: #FEF7FF;
+            --on-surface: #1D1B20;
+            --animation-speed: 0.4s;
         }
+        * { font-family: 'Roboto Flex', sans-serif; }
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: var(--surface);
+            color: var(--on-surface);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Critical layout styles */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
         /* Floating action button above all, respecting bottom navbar and safe area */
         .fab {
             position: fixed;
@@ -35,6 +55,7 @@
             pointer-events: none;
             transform: translateY(40px);
         }
+        
         /* Add fade transitions for hero and app */
         #hero, #app {
             transition: opacity 400ms ease-in-out;
@@ -44,6 +65,12 @@
         }
         #hero.fade-in, #app.fade-in {
             opacity: 1;
+        }
+        
+        /* Push the footer behind everything and disable interaction */
+        footer.s.fixed.bottom-align.right-align {
+            z-index: -1;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -110,9 +137,9 @@
         <section id="hero" class="hero" style="display:flex; align-items:center; justify-content:center; box-sizing:border-box; position:relative; overflow:hidden;">
             <div class="container">
                 <div class="hero-content center-align" style="position:relative; z-index:1;">
-                    <h1>Experience the Future of Android</h1>
-                    <p>AlphaDroid is a custom ROM based on LineageOS/crDroid, with a new look and some extra features and optimizations.</p>
-                    <div class="hero-buttons large-padding">
+                    <h1 id="hero-title">Experience the Future of Android</h1>
+                    <p id="hero-subtitle">AlphaDroid is a custom ROM based on LineageOS/crDroid, with a new look and some extra features and optimizations.</p>
+                    <div class="hero-buttons large-padding" id="hero-buttons">
                         <a href="#download">
                             <button class="round large">
                                 <i>rocket_launch</i>
@@ -136,6 +163,21 @@
 
     <script src="index.js" defer></script>
     <script src="route.js"></script>
+    <script src="performance.js" defer></script>
+    <script>
+        // Register service worker for better caching and offline support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered:', registration);
+                    })
+                    .catch(error => {
+                        console.log('SW registration failed:', error);
+                    });
+            });
+        }
+    </script>
     <script>
         // Adjust FAB position to sit above the bottom navbar when it's visible
         function updateFabPosition() {
@@ -253,6 +295,32 @@
                 setTimeout(() => navigateTo('/'), 500);
             } else {
                 navigateTo('/');
+            }
+        });
+
+        // Update hero content from configuration
+        window.addEventListener('configReady', function(event) {
+            const config = event.detail.config;
+            const hero = config?.content?.hero;
+            
+            if (hero) {
+                const titleEl = document.getElementById('hero-title');
+                const subtitleEl = document.getElementById('hero-subtitle');
+                const buttonsEl = document.getElementById('hero-buttons');
+                
+                if (titleEl && hero.title) titleEl.textContent = hero.title;
+                if (subtitleEl && hero.subtitle) subtitleEl.textContent = hero.subtitle;
+                
+                if (buttonsEl && hero.buttons && Array.isArray(hero.buttons)) {
+                    buttonsEl.innerHTML = hero.buttons.map(button => `
+                        <a href="${button.route || '#'}">
+                            <button class="round large ${button.style === 'secondary' ? 'border' : ''}">
+                                <i>${button.icon || ''}</i>
+                                <span>${button.text || ''}</span>
+                            </button>
+                        </a>
+                    `).join('');
+                }
             }
         });
     </script>

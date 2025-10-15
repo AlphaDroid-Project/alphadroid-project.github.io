@@ -1,26 +1,63 @@
-const routes = {
-    "#": "pages/home.html",
-    "#home": "pages/home.html",
-    "#features": "pages/home.html",     // will scroll to #features after render
-    "#screenshots": "pages/home.html",  // will scroll to #screenshots after render (if present)
-    "#devices": "pages/devices.html",
-    // UPDATED: #download now treated as home section (scroll to #download)
-    "#download": "pages/home.html",
-    "#about": "pages/about.html",
-    "#contact": "pages/contact.html"
-};
+// Routes will be loaded from configuration
+let routes = {};
+let sectionHashes = new Set();
 
-// NEW: section hashes that should not trigger page reload when already on home
-const sectionHashes = new Set(['#features', '#screenshots', '#download']);
+// Initialize routes from configuration
+async function initializeRoutes() {
+    if (window.configManager && window.configManager.isLoaded()) {
+        const navConfig = window.configManager.getNavigation();
+        routes = navConfig.routes || {};
+        sectionHashes = new Set(navConfig.sections || []);
+    } else {
+        // Fallback routes
+        routes = {
+            "#": "pages/home.html",
+            "#home": "pages/home.html",
+            "#features": "pages/home.html",
+            "#screenshots": "pages/home.html",
+            "#devices": "pages/devices.html",
+            "#download": "pages/home.html",
+            "#about": "pages/about.html",
+            "#contact": "pages/contact.html"
+        };
+        sectionHashes = new Set(['#features', '#screenshots', '#download']);
+    }
+}
 
-// Small in-memory cache for fetched HTML fragments
+// Initialize routes when config is ready
+window.addEventListener('configReady', initializeRoutes);
+// Also initialize immediately if config is already loaded
+if (window.configManager && window.configManager.isLoaded()) {
+    initializeRoutes();
+}
+
+// Optimized in-memory cache with size limits and TTL
 window.__pageCache = window.__pageCache || new Map();
+window.__cacheTimestamps = window.__cacheTimestamps || new Map();
+let CACHE_MAX_SIZE = 10;
+let CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Initialize cache settings from configuration
+function initializeCacheSettings() {
+    if (window.configManager && window.configManager.isLoaded()) {
+        const uiConfig = window.configManager.getUi();
+        CACHE_MAX_SIZE = uiConfig.cache?.maxSize || 10;
+        CACHE_TTL = uiConfig.cache?.ttl || 5 * 60 * 1000;
+    }
+}
 
 async function fetchContent(url) {
-    // Serve from cache if available
+    // Serve from cache if available and not expired
     if (window.__pageCache.has(url)) {
-        const cached = window.__pageCache.get(url);
-        return { ok: true, text: async () => cached };
+        const timestamp = window.__cacheTimestamps.get(url);
+        if (timestamp && Date.now() - timestamp < CACHE_TTL) {
+            const cached = window.__pageCache.get(url);
+            return { ok: true, text: async () => cached };
+        } else {
+            // Remove expired cache entry
+            window.__pageCache.delete(url);
+            window.__cacheTimestamps.delete(url);
+        }
     }
 
     // Use preloaded page fragment if available
@@ -51,7 +88,16 @@ async function fetchContent(url) {
     const res = await fetch(url, { cache: 'no-cache' });
     if (res.ok) {
         const html = await res.text();
+        
+        // Implement cache size management
+        if (window.__pageCache.size >= CACHE_MAX_SIZE) {
+            const firstKey = window.__pageCache.keys().next().value;
+            window.__pageCache.delete(firstKey);
+            window.__cacheTimestamps.delete(firstKey);
+        }
+        
         window.__pageCache.set(url, html);
+        window.__cacheTimestamps.set(url, Date.now());
         return { ok: true, text: async () => html };
     }
     return res;
@@ -94,25 +140,57 @@ const makeLoadAction = (limit, scrollId) => async () => {
     if (scrollId) {
         scrollToSection(scrollId);
     } else if (limit === 0) {
-        // Devices page: scroll to top below header
+        // Devices page: scroll to devices-title element without being obscured by navbar
         setTimeout(() => {
-            const header = document.querySelector('header');
-            const headerH = header ? header.getBoundingClientRect().height : 0;
-            window.scrollTo({ top: Math.max(0, headerH + 8), behavior: 'smooth' });
+            const devicesTitle = document.getElementById('devices-title');
+            if (devicesTitle) {
+                scrollWithHeaderOffset(devicesTitle);
+            } else {
+                // Fallback: scroll to top below header if devices-title not found
+                const header = document.querySelector('header');
+                const headerH = header ? header.getBoundingClientRect().height : 0;
+                window.scrollTo({ top: Math.max(0, headerH + 8), behavior: 'smooth' });
+            }
         }, 120);
     }
 };
 
-// Simplified route actions using the helper
-const routeActions = {
-    "#": makeLoadAction(5),
-    "#home": makeLoadAction(5),
-    "#features": makeLoadAction(5, 'features'),
-    "#screenshots": makeLoadAction(5, 'screenshots'),
-    // UPDATED: #download now scrolls to in-page section "download"
-    "#download": makeLoadAction(5, 'download'),
-    "#devices": makeLoadAction(0)
-};
+// Route actions will be initialized from configuration
+let routeActions = {};
+
+// Initialize route actions from configuration
+function initializeRouteActions() {
+    if (window.configManager && window.configManager.isLoaded()) {
+        const uiConfig = window.configManager.getUi();
+        const homePreview = uiConfig.deviceLimits?.homePreview || 5;
+        
+        routeActions = {
+            "#": makeLoadAction(homePreview),
+            "#home": makeLoadAction(homePreview),
+            "#features": makeLoadAction(homePreview, 'features'),
+            "#screenshots": makeLoadAction(homePreview, 'screenshots'),
+            "#download": makeLoadAction(homePreview, 'download'),
+            "#devices": makeLoadAction(0)
+        };
+    } else {
+        // Fallback route actions
+        routeActions = {
+            "#": makeLoadAction(5),
+            "#home": makeLoadAction(5),
+            "#features": makeLoadAction(5, 'features'),
+            "#screenshots": makeLoadAction(5, 'screenshots'),
+            "#download": makeLoadAction(5, 'download'),
+            "#devices": makeLoadAction(0)
+        };
+    }
+}
+
+// Initialize route actions when config is ready
+window.addEventListener('configReady', () => {
+    initializeRoutes();
+    initializeCacheSettings();
+    initializeRouteActions();
+});
 
 // NEW: helper to scroll accounting for fixed header height
 function scrollWithHeaderOffset(el, extra = 8) {
@@ -339,10 +417,16 @@ function updateNavigationState() {
     }
 }
 
-// NEW: Throttled scroll handler for navigation updates
+// Optimized throttled scroll handler for navigation updates
 let scrollUpdateTimeout = null;
+let lastScrollY = 0;
 function handleScrollNavigationUpdate() {
     if (scrollUpdateTimeout) return;
+    
+    // Skip if scroll position hasn't changed significantly
+    const currentScrollY = window.scrollY;
+    if (Math.abs(currentScrollY - lastScrollY) < 10) return;
+    lastScrollY = currentScrollY;
     
     scrollUpdateTimeout = setTimeout(() => {
         updateNavigationState();
@@ -451,7 +535,7 @@ async function loadDevices(limit = 0) {
         window.__allDevicesRaw = devices.slice();
 
         // Brand color mapping and helpers for OEM chip styling
-        const _brandColors = {
+        let _brandColors = {
             xiaomi: '#FF6900',
             google: '#4285F4',
             pixel: '#4285F4',
@@ -468,6 +552,14 @@ async function loadDevices(limit = 0) {
             nokia: '#124191',
             asus: '#005BAC'
         };
+        
+        // Use brand colors from configuration if available
+        if (window.configManager && window.configManager.isLoaded()) {
+            const uiConfig = window.configManager.getUi();
+            if (uiConfig.brandColors) {
+                _brandColors = { ..._brandColors, ...uiConfig.brandColors };
+            }
+        }
 
         function getBrandColor(name) {
             if (!name) return null;
@@ -499,6 +591,7 @@ async function loadDevices(limit = 0) {
 
         // Batch DOM insertion to reduce reflows
         const frag = document.createDocumentFragment();
+        const deviceCards = [];
 
         devices.forEach(res => {
             const d = normalizeEntry(res);
@@ -582,7 +675,7 @@ async function loadDevices(limit = 0) {
 
             // NEW: simple card layout to match requested structure
             card.innerHTML = `
-                <img loading="lazy" class="responsive large surface-container-low" src="${escapeAttr(imageUrl)}" alt="${escapeAttr(fullname)}" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'extra-large',textContent:'smartphone'}));">
+                <img loading="lazy" class="responsive large surface-container-low" src="${escapeAttr(imageUrl)}" alt="${escapeAttr(fullname)}" decoding="async" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'extra-large',textContent:'smartphone'}));">
                 <div class="padding">
                     <h5 class="device-title" title="${escapeAttr(fullname)}">
                         <span class="marquee-inner">${escapeHtml(fullname)}</span>
@@ -615,8 +708,11 @@ async function loadDevices(limit = 0) {
                     </div>
                 </div>
             `;
-            frag.appendChild(card);
+            deviceCards.push(card);
         });
+
+        // Batch append all cards at once
+        deviceCards.forEach(card => frag.appendChild(card));
 
         grid.appendChild(frag);
 
@@ -826,7 +922,11 @@ async function loadDevices(limit = 0) {
 
     // Try remote GitHub API listing and fall back to raw fetching if necessary
     try {
-        const apiUrl = 'https://api.github.com/repos/AlphaDroid-devices/OTA/contents/';
+        let apiUrl = 'https://api.github.com/repos/AlphaDroid-devices/OTA/contents/';
+        if (window.configManager && window.configManager.isLoaded()) {
+            const apiConfig = window.configManager.getApi();
+            apiUrl = apiConfig.github?.apiUrl || apiUrl;
+        }
         const listResp = await fetch(apiUrl);
         if (!listResp.ok) throw new Error(`Failed to list repo contents: ${listResp.status}`);
 
@@ -1648,6 +1748,39 @@ function buildOemFilterChips() {
 // BeerCSS footer builder
 function buildSiteFooter() {
     if (document.getElementById('site-footer')) return; // already added
+    
+    let footerConfig = {};
+    if (window.configManager && window.configManager.isLoaded()) {
+        footerConfig = window.configManager.getFooter();
+    }
+    
+    const social = window.configManager?.getSocial() || {
+        telegram: { chat: "https://t.me/alphadroid_chat", releases: "https://t.me/alphadroid_releases" },
+        github: "https://github.com/alphadroid-project",
+        sourceforge: "https://sourceforge.net/projects/alphadroid-project/"
+    };
+    
+    const description = footerConfig.description || "The next-generation Android experience with Material You design, performance optimizations and extensive customization.";
+    const resources = footerConfig.links?.resources || [
+        { text: "Installation Guide", url: "https://t.me/alphadroid_chat" },
+        { text: "FAQ", url: "https://t.me/alphadroid_chat" },
+        { text: "Bug Tracker", url: "https://t.me/alphadroid_chat" }
+    ];
+    const community = footerConfig.links?.community || [
+        { text: "Telegram Group", url: "https://t.me/alphadroid_chat" },
+        { text: "Releases Channel", url: "https://t.me/alphadroid_releases" },
+        { text: "GitHub Org", url: "https://github.com/alphadroid-project" },
+        { text: "SourceForge", url: "https://sourceforge.net/projects/alphadroid-project/" }
+    ];
+    
+    const copyright = footerConfig.copyright || {
+        text: "AlphaDroid Project. Open-source project not affiliated with Google or Android. All trademarks belong to their owners.",
+        credits: [
+            { text: "Pacuka", url: "https://t.me/Pacuka" },
+            { text: "Naoko Shoto", url: "https://github.com/naokoshoto" }
+        ]
+    };
+    
     const footer = document.createElement('footer');
     footer.id = 'site-footer';
     footer.className = 'medium-padding';
@@ -1656,34 +1789,29 @@ function buildSiteFooter() {
             <div class="grid small-space">
                 <div class="s12 m6 l4">
                     <h5 class="no-margin">AlphaDroid ROM</h5>
-                    <p class="small-text">The next-generation Android experience with Material You design, performance optimizations and extensive customization.</p>
+                    <p class="small-text">${description}</p>
                     <nav class="chips" style="gap:6px;">
-                        <a class="chip small" target="_blank" href="https://t.me/alphadroid_chat"><i>forum</i><span>Chat</span></a>
-                        <a class="chip small" target="_blank" href="https://t.me/alphadroid_releases"><i>cloud_download</i><span>Releases</span></a>
-                        <a class="chip small" target="_blank" href="https://github.com/alphadroid-project"><i>code</i><span>GitHub</span></a>
+                        <a class="chip small" target="_blank" href="${social.telegram?.chat || '#'}"><i>forum</i><span>Chat</span></a>
+                        <a class="chip small" target="_blank" href="${social.telegram?.releases || '#'}"><i>cloud_download</i><span>Releases</span></a>
+                        <a class="chip small" target="_blank" href="${social.github || '#'}"><i>code</i><span>GitHub</span></a>
                     </nav>
                 </div>
                 <div class="s12 m6 l4">
                     <h6 class="small-margin">Resources</h6>
                     <ul class="list no-border no-padding">
-                        <li><a target="_blank" href="https://t.me/alphadroid_chat">Installation Guide</a></li>
-                        <li><a target="_blank" href="https://t.me/alphadroid_chat">FAQ</a></li>
-                        <li><a target="_blank" href="https://t.me/alphadroid_chat">Bug Tracker</a></li>
+                        ${resources.map(item => `<li><a target="_blank" href="${item.url}">${item.text}</a></li>`).join('')}
                     </ul>
                 </div>
                 <div class="s12 m6 l4">
                     <h6 class="small-margin">Community</h6>
                     <ul class="list no-border no-padding">
-                        <li><a target="_blank" href="https://t.me/alphadroid_chat">Telegram Group</a></li>
-                        <li><a target="_blank" href="https://t.me/alphadroid_releases">Releases Channel</a></li>
-                        <li><a target="_blank" href="https://github.com/alphadroid-project">GitHub Org</a></li>
-                        <li><a target="_blank" href="https://sourceforge.net/projects/alphadroid-project/">SourceForge</a></li>
+                        ${community.map(item => `<li><a target="_blank" href="${item.url}">${item.text}</a></li>`).join('')}
                     </ul>
                 </div>
             </div>
             <div class="divider small-margin"></div>
             <div class="row small-text center-align" style="opacity:.75; max-width:70vw;">
-                <p style="width: 100%;">&copy; ${new Date().getFullYear()} AlphaDroid Project. Open-source project not affiliated with Google or Android. All trademarks belong to their owners. Site by <a class="link" href="https://t.me/Pacuka" target="_blank" rel="noopener">Pacuka</a>, redesigned by <a class="link" href="https://github.com/naokoshoto" target="_blank" rel="noopener">Naoko Shoto</a>.</p>
+                <p style="width: 100%;">&copy; ${new Date().getFullYear()} ${copyright.text} Site by ${copyright.credits.map(credit => `<a class="link" href="${credit.url}" target="_blank" rel="noopener">${credit.text}</a>`).join(', ')}.</p>
             </div>
         </div>`;
     document.body.appendChild(footer);

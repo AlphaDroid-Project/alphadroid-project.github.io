@@ -1,0 +1,71 @@
+# Webhook Handler for AlphaDroid-devices/OTA
+# This file should be placed in the .github/workflows/ directory of the OTA repository
+
+name: Notify Website of Updates
+
+on:
+  push:
+    branches: [master, main]
+    paths: ['*.json']
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: github.repository == 'AlphaDroid-devices/OTA'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need previous commit to compare changes
+          
+      - name: Get changed files
+        id: changes
+        run: |
+          # Get list of changed files in this push
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          echo "changed_files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+          
+          # Check if any JSON files were changed
+          if echo "$CHANGED_FILES" | grep -q "\.json$"; then
+            echo "has_json_changes=true" >> $GITHUB_OUTPUT
+            echo "event_type=ota-device-update" >> $GITHUB_OUTPUT
+            echo "Found JSON file changes, will trigger device update"
+          else
+            echo "has_json_changes=false" >> $GITHUB_OUTPUT
+            echo "event_type=ota-update" >> $GITHUB_OUTPUT
+            echo "No JSON file changes detected"
+          fi
+          
+          # Log the changes for debugging
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+      - name: Trigger website update
+        if: steps.changes.outputs.has_json_changes == 'true'
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: alphadroid-project/alphadroid-project.github.io
+          event-type: ${{ steps.changes.outputs.event_type }}
+          client-payload: |
+            {
+              "changed_files": "${{ steps.changes.outputs.changed_files }}",
+              "repository": "${{ github.repository }}",
+              "commit": "${{ github.sha }}",
+              "ref": "${{ github.ref }}",
+              "pusher": "${{ github.actor }}",
+              "timestamp": "${{ github.event.head_commit.timestamp }}",
+              "commit_message": "${{ github.event.head_commit.message }}",
+              "commit_url": "${{ github.event.head_commit.url }}"
+            }
+          
+      - name: Log notification result
+        run: |
+          if [[ "${{ steps.changes.outputs.has_json_changes }}" == "true" ]]; then
+            echo "✅ Successfully triggered website update"
+            echo "Event type: ${{ steps.changes.outputs.event_type }}"
+            echo "Repository: ${{ github.repository }}"
+            echo "Commit: ${{ github.sha }}"
+          else
+            echo "ℹ️ No JSON file changes detected, skipping webhook trigger"
+          fi

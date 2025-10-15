@@ -1,6 +1,6 @@
 <div class="container">
-  <h1>Devices</h1>
-  <p>Browse available devices below.</p>
+  <h1 id="devices-title">Devices</h1>
+  <p id="devices-subtitle">Browse available devices below.</p>
 
   <div id="device-search-wrapper" class="field large prefix round fill active" style="max-width:640px;margin:16px auto;">
     <i class="front">search</i>
@@ -40,5 +40,27 @@
       });
     }
   })();
+
+  // Update content from configuration
+  window.addEventListener('configReady', function(event) {
+    const config = event.detail.config;
+    const devices = config?.content?.devices;
+    
+    if (devices) {
+      const titleEl = document.getElementById('devices-title');
+      const subtitleEl = document.getElementById('devices-subtitle');
+      const searchInput = document.getElementById('device-search-input');
+      
+      if (titleEl && devices.title) {
+        titleEl.textContent = devices.title;
+      }
+      if (subtitleEl && devices.subtitle) {
+        subtitleEl.textContent = devices.subtitle;
+      }
+      if (searchInput && devices.searchPlaceholder) {
+        searchInput.placeholder = devices.searchPlaceholder;
+      }
+    }
+  });
 </script>
 
