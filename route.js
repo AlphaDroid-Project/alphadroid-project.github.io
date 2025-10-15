@@ -912,7 +912,11 @@ async function loadDevices(limit = 0) {
             let devicesList = [];
             try {
                 const localResp = await fetch('data/devices.json', { cache: 'no-cache' });
-                if (localResp && localResp.ok) devicesList = await localResp.json();
+                if (localResp && localResp.ok) {
+                    const parsed = await localResp.json();
+                    // Ensure devicesList is always an array
+                    devicesList = Array.isArray(parsed) ? parsed : [];
+                }
             } catch (e) {
                 // ignore, we'll create minimal entries from overrides
             }
@@ -1012,7 +1016,8 @@ async function loadDevices(limit = 0) {
         const listResp = await fetch(apiUrl);
         if (!listResp.ok) throw new Error(`Failed to list repo contents: ${listResp.status}`);
 
-        const items = await listResp.json();
+        const parsed = await listResp.json();
+        const items = Array.isArray(parsed) ? parsed : [];
         const jsonItems = items.filter(i => i.type === 'file' && i.name.toLowerCase().endsWith('.json'));
 
         if (jsonItems.length === 0) {
@@ -1359,7 +1364,8 @@ async function showDeviceDetails(codename) {
         try {
             const localResp = await fetch('data/devices.json');
             if (localResp && localResp.ok) {
-                const list = await localResp.json();
+                const parsed = await localResp.json();
+                const list = Array.isArray(parsed) ? parsed : [];
                 deviceData = list.find(item => {
                     if (!item) return false;
                     const responses = (item.data && Array.isArray(item.data.response)) ? item.data.response : (item.data ? [item.data] : []);
