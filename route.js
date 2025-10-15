@@ -24,6 +24,44 @@ async function initializeRoutes() {
     }
 }
 
+// NEW: Check if hash is a device route
+function isDeviceRoute(hash) {
+    return hash && hash.startsWith('#device/');
+}
+
+// NEW: Extract codename from device route
+function getDeviceCodename(hash) {
+    if (!isDeviceRoute(hash)) return null;
+    return hash.replace('#device/', '');
+}
+
+// NEW: Helper function to load page content
+async function loadPageContent(pagePath, appDiv, heroDiv) {
+    try {
+        const response = await fetchContent(pagePath);
+        if (response.ok) {
+            appDiv.innerHTML = await response.text();
+            appDiv.classList.remove('fade-out');
+            appDiv.classList.add('fade-in');
+            if (heroDiv) {
+                heroDiv.classList.remove('fade-out');
+                heroDiv.classList.add('fade-in');
+            }
+            
+            // Ensure footer present
+            if (typeof buildSiteFooter === 'function') buildSiteFooter();
+            
+            // Update hero visibility after content change
+            if (typeof window.updateHeroVisibility === 'function') window.updateHeroVisibility();
+            
+            return true;
+        }
+    } catch (error) {
+        console.error('Error loading page content:', error);
+    }
+    return false;
+}
+
 // Initialize routes when config is ready
 window.addEventListener('configReady', initializeRoutes);
 // Also initialize immediately if config is already loaded
@@ -123,6 +161,15 @@ function navigateTo(path) {
     window.location.hash = hash;
 }
 
+// NEW: Navigate to device details popup
+function navigateToDevice(codename) {
+    if (!codename) return;
+    window.location.hash = `#device/${encodeURIComponent(codename)}`;
+}
+
+// NEW: Make navigateToDevice globally available
+window.navigateToDevice = navigateToDevice;
+
 // Fix: proper function name (was split across a newline previously)
 async function navigate(event, path) {
     event.preventDefault();
@@ -218,6 +265,41 @@ async function updateContent() {
     const hash = window.location.hash || '#';
     const appDiv = document.getElementById("app");
     const heroDiv = document.getElementById("hero");
+
+    // NEW: Handle device routes - show device popup directly
+    if (isDeviceRoute(hash)) {
+        const codename = getDeviceCodename(hash);
+        if (codename) {
+            // Navigate to devices page first if not already there
+            if (window.__currentPagePath !== 'pages/devices.html') {
+                await loadPageContent('pages/devices.html', appDiv, heroDiv);
+                window.__currentPagePath = 'pages/devices.html';
+            }
+            
+            // Wait for devices to load, then show popup
+            setTimeout(async () => {
+                try {
+                    await showDeviceDetails(codename);
+                } catch (error) {
+                    console.error('Failed to show device details:', error);
+                    // Fallback: show error message
+                    const snackbar = document.createElement('div');
+                    snackbar.className = 'snackbar';
+                    snackbar.innerHTML = `
+                        <div>Device "${codename}" not found</div>
+                        <button class="transparent circle" onclick="this.parentElement.remove()">
+                            <i>close</i>
+                        </button>
+                    `;
+                    document.body.appendChild(snackbar);
+                    setTimeout(() => snackbar.remove(), 5000);
+                }
+            }, 500); // Give time for devices to load
+            
+            updateNavigationState();
+            return;
+        }
+    }
 
     // NEW: Skip reload for in-home sections if home already loaded
     if (sectionHashes.has(hash) && window.__currentPagePath === 'pages/home.html') {
@@ -357,9 +439,9 @@ function updateNavigationState() {
     let activeDesktop = null;
     let activeMobile = null;
     
-    // Check if we're on devices page - if so, no nav items should be active
-    if (hash === '#devices' || window.__currentPagePath === 'pages/devices.html') {
-        // Don't set any active states for devices page
+    // Check if we're on devices page or device route - if so, no nav items should be active
+    if (hash === '#devices' || hash.startsWith('#device/') || window.__currentPagePath === 'pages/devices.html') {
+        // Don't set any active states for devices page or device routes
         return;
     }
     
@@ -1505,7 +1587,7 @@ async function showDeviceDetails(codename) {
                 </div>
                 <div class="s12">
                     <nav class="row right-align no-space">
-                        <button class="transparent link" onclick="this.closest('dialog').close(); hideOverlay()">Close</button>
+                        <button class="transparent link" onclick="this.closest('dialog').close(); hideOverlay(); if(window.location.hash.startsWith('#device/')) window.location.hash = '#devices';">Close</button>
                         <button id="device-download" class="transparent link">Download</button>
                     </nav>
                 </div>
@@ -1571,6 +1653,16 @@ async function showDeviceDetails(codename) {
         showOverlay();
         if (typeof deviceDialog.show === 'function') deviceDialog.show();
         else if (typeof deviceDialog.showModal === 'function') deviceDialog.showModal();
+        
+        // NEW: Handle closing the modal - update URL to devices page
+        const originalCloseHandler = deviceDialog.onclose;
+        deviceDialog.onclose = function(event) {
+            // If we're on a device route, navigate back to devices page
+            if (isDeviceRoute(window.location.hash)) {
+                window.location.hash = '#devices';
+            }
+            if (originalCloseHandler) originalCloseHandler.call(this, event);
+        };
     } catch (error) {
         console.error('Error showing device details:', error);
         const snackbar = document.createElement('div');

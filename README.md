@@ -161,6 +161,51 @@ After modifying the device list:
 </div>
 ```
 
+## Direct Device Links
+
+The website now supports direct links to device download popups using codenames as identifiers. This allows users to share direct links to specific device pages.
+
+### URL Format
+
+Direct device links use the following format:
+```
+https://your-domain.com/#device/[codename]
+```
+
+### Examples
+
+- `https://your-domain.com/#device/raphael` - Direct link to Redmi K20 Pro / Mi 9T Pro
+- `https://your-domain.com/#device/sweet` - Direct link to Redmi Note 10 Pro
+- `https://your-domain.com/#device/shiba` - Direct link to Pixel 8
+
+### How It Works
+
+1. When a user visits a device URL (e.g., `#device/raphael`), the website:
+   - Automatically navigates to the devices page
+   - Loads the device list
+   - Opens the device details popup for the specified codename
+2. When the user closes the popup, they're redirected back to the devices page (`#devices`)
+3. The URL updates accordingly to reflect the current state
+
+### Implementation Details
+
+The routing is handled by JavaScript functions in `route.js`:
+- `isDeviceRoute(hash)` - Checks if the current hash is a device route
+- `getDeviceCodename(hash)` - Extracts the codename from a device route
+- `navigateToDevice(codename)` - Programmatically navigate to a device
+- `showDeviceDetails(codename)` - Shows the device popup (existing function)
+
+### Usage in Code
+
+To programmatically navigate to a device popup:
+```javascript
+// Navigate to a specific device
+navigateToDevice('raphael');
+
+// Or manually set the hash
+window.location.hash = '#device/raphael';
+```
+
 ## Support
 
 For questions or assistance with adding devices, contact on Telegram: [Pacuka](https://t.me/Pacuka)
