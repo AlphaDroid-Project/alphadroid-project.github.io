@@ -26,13 +26,20 @@ async function initializeRoutes() {
 
 // NEW: Check if hash is a device route
 function isDeviceRoute(hash) {
-    return hash && hash.startsWith('#device/');
+    return hash && hash.startsWith('#devices?codename=');
 }
 
 // NEW: Extract codename from device route
 function getDeviceCodename(hash) {
     if (!isDeviceRoute(hash)) return null;
-    return hash.replace('#device/', '');
+    try {
+        const url = new URL(hash.substring(1), window.location.origin);
+        return url.searchParams.get('codename');
+    } catch (e) {
+        // Fallback for older browsers or malformed URLs
+        const match = hash.match(/#devices\?codename=([^&]+)/);
+        return match ? decodeURIComponent(match[1]) : null;
+    }
 }
 
 // NEW: Helper function to load page content
@@ -164,7 +171,7 @@ function navigateTo(path) {
 // NEW: Navigate to device details popup
 function navigateToDevice(codename) {
     if (!codename) return;
-    window.location.hash = `#device/${encodeURIComponent(codename)}`;
+    window.location.hash = `#devices?codename=${encodeURIComponent(codename)}`;
 }
 
 // NEW: Make navigateToDevice globally available
@@ -270,34 +277,33 @@ async function updateContent() {
     if (isDeviceRoute(hash)) {
         const codename = getDeviceCodename(hash);
         if (codename) {
-            // Navigate to devices page first if not already there
-            if (window.__currentPagePath !== 'pages/devices.html') {
-                await loadPageContent('pages/devices.html', appDiv, heroDiv);
-                window.__currentPagePath = 'pages/devices.html';
-            }
-            
-            // Wait for devices to load, then show popup
-            setTimeout(async () => {
-                try {
-                    await showDeviceDetails(codename);
-                } catch (error) {
-                    console.error('Failed to show device details:', error);
-                    // Fallback: show error message
-                    const snackbar = document.createElement('div');
-                    snackbar.className = 'snackbar';
-                    snackbar.innerHTML = `
-                        <div>Device "${codename}" not found</div>
-                        <button class="transparent circle" onclick="this.parentElement.remove()">
-                            <i>close</i>
-                        </button>
-                    `;
-                    document.body.appendChild(snackbar);
-                    setTimeout(() => snackbar.remove(), 5000);
+            // Show device popup immediately without changing the current page
+            try {
+                await showDeviceDetails(codename);
+                updateNavigationState();
+                return;
+            } catch (error) {
+                console.error('Failed to show device details:', error);
+                // Fallback: navigate to devices page and show error
+                if (window.__currentPagePath !== 'pages/devices.html') {
+                    await loadPageContent('pages/devices.html', appDiv, heroDiv);
+                    window.__currentPagePath = 'pages/devices.html';
                 }
-            }, 500); // Give time for devices to load
-            
-            updateNavigationState();
-            return;
+                
+                const snackbar = document.createElement('div');
+                snackbar.className = 'snackbar';
+                snackbar.innerHTML = `
+                    <div>Device "${codename}" not found</div>
+                    <button class="transparent circle" onclick="this.parentElement.remove()">
+                        <i>close</i>
+                    </button>
+                `;
+                document.body.appendChild(snackbar);
+                setTimeout(() => snackbar.remove(), 5000);
+                
+                updateNavigationState();
+                return;
+            }
         }
     }
 
@@ -440,7 +446,7 @@ function updateNavigationState() {
     let activeMobile = null;
     
     // Check if we're on devices page or device route - if so, no nav items should be active
-    if (hash === '#devices' || hash.startsWith('#device/') || window.__currentPagePath === 'pages/devices.html') {
+    if (hash === '#devices' || hash.startsWith('#devices?codename=') || window.__currentPagePath === 'pages/devices.html') {
         // Don't set any active states for devices page or device routes
         return;
     }
@@ -920,8 +926,14 @@ async function loadDevices(limit = 0) {
                 const localResp = await fetch('data/devices.json', { cache: 'no-cache' });
                 if (localResp && localResp.ok) {
                     const parsed = await localResp.json();
-                    // Ensure devicesList is always an array
-                    devicesList = Array.isArray(parsed) ? parsed : [];
+                    // Handle both array format and object with devices property
+                    if (Array.isArray(parsed)) {
+                        devicesList = parsed;
+                    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.devices)) {
+                        devicesList = parsed.devices;
+                    } else {
+                        devicesList = [];
+                    }
                 }
             } catch (e) {
                 // ignore, we'll create minimal entries from overrides
@@ -998,9 +1010,16 @@ async function loadDevices(limit = 0) {
     try {
         const localResp = await fetch('data/devices.json', { cache: 'no-cache' });
         if (localResp.ok) {
-            const list = await localResp.json();
+            const parsed = await localResp.json();
+            // Handle both array format and object with devices property
+            let list = [];
+            if (Array.isArray(parsed)) {
+                list = parsed;
+            } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.devices)) {
+                list = parsed.devices;
+            }
             // Expecting array of { name, data, rawUrl, lastModified }
-            const valid = (Array.isArray(list) ? list : []).filter(Boolean);
+            const valid = list.filter(Boolean);
             // sort by best-known updated time desc
             valid.sort((a, b) => getUpdatedTime(b) - getUpdatedTime(a));
             const toRender = (limit && limit > 0) ? valid.slice(0, limit) : valid;
@@ -1333,9 +1352,94 @@ deviceDialog.style.overflow = 'hidden';
 deviceDialog.style.zIndex = '100001'; // Above the overlay
 document.body.appendChild(deviceDialog);
 
+// NEW: Load device data in background without displaying
+async function loadDeviceDataInBackground() {
+    try {
+        // Try to load from device_db.json first (most comprehensive)
+        const dbResp = await fetch('data/device_db.json', { cache: 'no-cache' }).catch(() => null);
+        if (dbResp && dbResp.ok) {
+            const db = await dbResp.json();
+            const overrides = (db && typeof db === 'object' && db.overrides && typeof db.overrides === 'object') ? db.overrides : {};
+
+            // Load devices.json for additional data
+            let devicesList = [];
+            try {
+                const localResp = await fetch('data/devices.json', { cache: 'no-cache' });
+                if (localResp && localResp.ok) {
+                    const parsed = await localResp.json();
+                    if (Array.isArray(parsed)) {
+                        devicesList = parsed;
+                    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.devices)) {
+                        devicesList = parsed.devices;
+                    }
+                }
+            } catch (e) { /* ignore */ }
+
+            // Build device entries similar to loadDevices but without rendering
+            const keys = (overrides && typeof overrides === 'object') ? Object.keys(overrides) : [];
+            const entries = keys.map(key => {
+                const ov = overrides[key] || {};
+                const lower = key.toLowerCase();
+                const found = (Array.isArray(devicesList) ? devicesList : []).find(it => ((it.name || '').replace(/\.json$/i, '').toLowerCase() === lower));
+                if (found) {
+                    const respArr = (found.data && Array.isArray(found.data.response)) ? found.data.response.slice() : (found.data ? [found.data] : []);
+                    const base = respArr[0] || {};
+                    const merged = Object.assign({}, base, {
+                        codename: ov.codename || base.codename || key,
+                        device: ov.model || base.device || base.model || base.device,
+                        model: ov.model || base.model || base.device || '',
+                        oem: ov.oem || base.oem || base.vendor || base.brand || '',
+                        maintainer: ov.maintainer || base.maintainer || base.maintainer,
+                        image: ov.image || base.image || (ov.codename ? `images/devices/${ov.codename}.webp` : `images/devices/${key}.webp`),
+                        aliases: Array.isArray(ov.aliases) ? ov.aliases : (Array.isArray(base.aliases) ? base.aliases : [])
+                    });
+                    respArr[0] = merged;
+                    return { ok: true, name: found.name || (key + '.json'), data: { response: respArr }, rawUrl: found.rawUrl || found.rawUrl };
+                }
+                // Minimal synthesized entry from override
+                const minimal = {
+                    maintainer: ov.maintainer || '',
+                    oem: ov.oem || '',
+                    device: ov.model || '',
+                    codename: ov.codename || key,
+                    image: ov.image || `images/devices/${key}.webp`,
+                    aliases: Array.isArray(ov.aliases) ? ov.aliases : []
+                };
+                return { ok: true, name: key + '.json', data: { response: [minimal] } };
+            });
+
+            // Store in global variable for showDeviceDetails to use
+            window.__allDevicesRaw = entries;
+            return;
+        }
+
+        // Fallback: try to load from devices.json directly
+        const localResp = await fetch('data/devices.json', { cache: 'no-cache' });
+        if (localResp.ok) {
+            const parsed = await localResp.json();
+            let list = [];
+            if (Array.isArray(parsed)) {
+                list = parsed;
+            } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.devices)) {
+                list = parsed.devices;
+            }
+            window.__allDevicesRaw = list.filter(Boolean);
+        }
+    } catch (error) {
+        console.error('Failed to load device data in background:', error);
+        window.__allDevicesRaw = [];
+    }
+}
+
 // Show device details in a modal dialog
 async function showDeviceDetails(codename) {
     try {
+        // NEW: Ensure devices data is loaded if not already available
+        if (!window.__allDevicesRaw || window.__allDevicesRaw.length === 0) {
+            // Load device data in background
+            await loadDeviceDataInBackground();
+        }
+
         // NEW: resolve unified parent + aliases via device_db.json
         let rootCode = codename;
         let unifiedAliases = [];
@@ -1365,26 +1469,51 @@ async function showDeviceDetails(codename) {
             }
         } catch (e) { /* ignore */ }
 
-        // Fetch device data (prefer local cache) using parent/rootCode
+        // Fetch device data (prefer background-loaded data) using parent/rootCode
         let deviceData = null;
-        try {
-            const localResp = await fetch('data/devices.json');
-            if (localResp && localResp.ok) {
-                const parsed = await localResp.json();
-                const list = Array.isArray(parsed) ? parsed : [];
-                deviceData = list.find(item => {
-                    if (!item) return false;
-                    const responses = (item.data && Array.isArray(item.data.response)) ? item.data.response : (item.data ? [item.data] : []);
-                    if ((item.name || '').replace(/\.json$/i, '').toLowerCase() === String(rootCode).toLowerCase()) return true;
-                    return responses.some(d => {
-                        if (!d) return false;
-                        const candidates = [d.codename, d.device, d.id, item.name];
-                        return candidates.some(c => (c || '').toString().toLowerCase() === String(rootCode).toLowerCase());
-                    });
+        
+        // First try to find in background-loaded data
+        if (window.__allDevicesRaw && window.__allDevicesRaw.length > 0) {
+            deviceData = window.__allDevicesRaw.find(item => {
+                if (!item) return false;
+                const responses = (item.data && Array.isArray(item.data.response)) ? item.data.response : (item.data ? [item.data] : []);
+                if ((item.name || '').replace(/\.json$/i, '').toLowerCase() === String(rootCode).toLowerCase()) return true;
+                return responses.some(d => {
+                    if (!d) return false;
+                    const candidates = [d.codename, d.device, d.id, item.name];
+                    return candidates.some(c => (c || '').toString().toLowerCase() === String(rootCode).toLowerCase());
                 });
-            }
-        } catch (e) { /* ignore and fallback */ }
+            });
+        }
+        
+        // If not found in background data, try direct fetch
+        if (!deviceData) {
+            try {
+                const localResp = await fetch('data/devices.json');
+                if (localResp && localResp.ok) {
+                    const parsed = await localResp.json();
+                    // Handle both array format and object with devices property
+                    let list = [];
+                    if (Array.isArray(parsed)) {
+                        list = parsed;
+                    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.devices)) {
+                        list = parsed.devices;
+                    }
+                    deviceData = list.find(item => {
+                        if (!item) return false;
+                        const responses = (item.data && Array.isArray(item.data.response)) ? item.data.response : (item.data ? [item.data] : []);
+                        if ((item.name || '').replace(/\.json$/i, '').toLowerCase() === String(rootCode).toLowerCase()) return true;
+                        return responses.some(d => {
+                            if (!d) return false;
+                            const candidates = [d.codename, d.device, d.id, item.name];
+                            return candidates.some(c => (c || '').toString().toLowerCase() === String(rootCode).toLowerCase());
+                        });
+                    });
+                }
+            } catch (e) { /* ignore and fallback */ }
+        }
 
+        // Final fallback: direct fetch from GitHub
         if (!deviceData) {
             const response = await fetch(`https://raw.githubusercontent.com/AlphaDroid-devices/OTA/master/${rootCode}.json`);
             if (!response.ok) throw new Error('Device info not found');
@@ -1599,7 +1728,7 @@ async function showDeviceDetails(codename) {
                 </div>
                 <div class="s12">
                     <nav class="row right-align no-space">
-                        <button class="transparent link" onclick="this.closest('dialog').close(); hideOverlay(); if(window.location.hash.startsWith('#device/')) window.location.hash = '#devices';">Close</button>
+                        <button class="transparent link" onclick="this.closest('dialog').close(); hideOverlay(); if(window.location.hash.startsWith('#devices?codename=')) window.location.hash = '#devices';">Close</button>
                         <button id="device-download" class="transparent link">Download</button>
                     </nav>
                 </div>
