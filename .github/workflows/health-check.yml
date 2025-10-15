@@ -1,0 +1,406 @@
+name: Health Check and Monitoring
+
+on:
+  schedule:
+    # Run health check every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: 'Type of health check to perform'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - data_freshness
+          - api_status
+          - website_status
+  repository_dispatch:
+    types: [health-check-request]
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Perform health check
+        id: health_check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHECK_TYPE: ${{ github.event.inputs.check_type || github.event.action || 'full' }}
+        run: |
+          cat > health-check.js <<'JS'
+          const https = require('https');
+          const fs = require('fs');
+          const path = require('path');
+          
+          const OTA_REPO = 'AlphaDroid-devices/OTA';
+          const API_BASE = `https://api.github.com/repos/${OTA_REPO}`;
+          const TOKEN = process.env.GITHUB_TOKEN;
+          const CHECK_TYPE = process.env.CHECK_TYPE;
+          
+          const opts = { 
+            headers: { 
+              'User-Agent': 'AlphaDroid-Health-Bot/1.0',
+              'Accept': 'application/vnd.github.v3+json',
+              ...(TOKEN ? { 'Authorization': `token ${TOKEN}` } : {})
+            }
+          };
+          
+          function get(url) {
+            return new Promise((resolve, reject) => {
+              const request = https.get(url, opts, response => {
+                let body = '';
+                response.on('data', chunk => body += chunk);
+                response.on('end', () => {
+                  if (response.statusCode >= 200 && response.statusCode < 300) {
+                    resolve({ 
+                      statusCode: response.statusCode, 
+                      headers: response.headers, 
+                      body: JSON.parse(body)
+                    });
+                  } else {
+                    reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
+                  }
+                });
+              });
+              
+              request.on('error', reject);
+              request.setTimeout(10000, () => {
+                request.destroy();
+                reject(new Error('Request timeout'));
+              });
+            });
+          }
+          
+          async function checkApiStatus() {
+            console.log('🔍 Checking GitHub API status...');
+            try {
+              const repoInfo = await get(`${API_BASE}`);
+              const commits = await get(`${API_BASE}/commits?per_page=1`);
+              
+              return {
+                status: 'healthy',
+                lastCommit: commits.body[0]?.commit?.author?.date || 'unknown',
+                repoSize: repoInfo.body.size || 'unknown',
+                defaultBranch: repoInfo.body.default_branch || 'unknown'
+              };
+            } catch (error) {
+              return {
+                status: 'unhealthy',
+                error: error.message
+              };
+            }
+          }
+          
+          async function checkDataFreshness() {
+            console.log('📊 Checking data freshness...');
+            
+            const devicesPath = path.join('data', 'devices.json');
+            if (!fs.existsSync(devicesPath)) {
+              return {
+                status: 'missing',
+                error: 'devices.json file not found'
+              };
+            }
+            
+            try {
+              const data = JSON.parse(fs.readFileSync(devicesPath, 'utf8'));
+              const metadata = data.metadata || {};
+              const fetchedAt = metadata.fetchedAt;
+              
+              if (!fetchedAt) {
+                return {
+                  status: 'unknown',
+                  error: 'No fetch timestamp in metadata'
+                };
+              }
+              
+              const fetchTime = new Date(fetchedAt);
+              const now = new Date();
+              const ageMinutes = Math.floor((now - fetchTime) / (1000 * 60));
+              const ageHours = Math.floor(ageMinutes / 60);
+              const ageDays = Math.floor(ageHours / 24);
+              
+              let status = 'fresh';
+              let warning = null;
+              
+              if (ageMinutes > 60) {
+                status = 'stale';
+                warning = `Data is ${ageMinutes} minutes old`;
+              }
+              if (ageHours > 6) {
+                status = 'old';
+                warning = `Data is ${ageHours} hours old`;
+              }
+              if (ageDays > 1) {
+                status = 'very_old';
+                warning = `Data is ${ageDays} days old`;
+              }
+              
+              return {
+                status,
+                fetchedAt,
+                ageMinutes,
+                ageHours,
+                ageDays,
+                warning,
+                deviceCount: data.devices?.length || 0,
+                lastTrigger: metadata.trigger || 'unknown'
+              };
+            } catch (error) {
+              return {
+                status: 'corrupt',
+                error: error.message
+              };
+            }
+          }
+          
+          async function checkWebsiteStatus() {
+            console.log('🌐 Checking website status...');
+            
+            const indexPath = 'index.html';
+            const stylePath = 'style.css';
+            const scriptPath = 'index.js';
+            
+            const checks = {
+              indexExists: fs.existsSync(indexPath),
+              styleExists: fs.existsSync(stylePath),
+              scriptExists: fs.existsSync(scriptPath),
+              configExists: fs.existsSync('config.json')
+            };
+            
+            const allExist = Object.values(checks).every(Boolean);
+            
+            return {
+              status: allExist ? 'healthy' : 'unhealthy',
+              checks,
+              missingFiles: Object.entries(checks)
+                .filter(([_, exists]) => !exists)
+                .map(([file, _]) => file.replace('Exists', ''))
+            };
+          }
+          
+          async function checkWorkflowStatus() {
+            console.log('⚙️ Checking workflow status...');
+            
+            const workflows = [
+              '.github/workflows/fetch-devices.yml',
+              '.github/workflows/poll-ota-updates.yml',
+              '.github/workflows/manual-update.yml'
+            ];
+            
+            const checks = {};
+            workflows.forEach(workflow => {
+              checks[path.basename(workflow, '.yml')] = fs.existsSync(workflow);
+            });
+            
+            const allExist = Object.values(checks).every(Boolean);
+            
+            return {
+              status: allExist ? 'healthy' : 'unhealthy',
+              workflows: checks,
+              missingWorkflows: Object.entries(checks)
+                .filter(([_, exists]) => !exists)
+                .map(([workflow, _]) => workflow)
+            };
+          }
+          
+          async function performHealthCheck() {
+            console.log(`🏥 Starting ${CHECK_TYPE} health check...`);
+            const startTime = Date.now();
+            
+            const results = {
+              timestamp: new Date().toISOString(),
+              checkType: CHECK_TYPE,
+              overallStatus: 'healthy',
+              checks: {},
+              warnings: [],
+              errors: []
+            };
+            
+            try {
+              // API Status Check
+              if (CHECK_TYPE === 'full' || CHECK_TYPE === 'api_status') {
+                results.checks.apiStatus = await checkApiStatus();
+                if (results.checks.apiStatus.status !== 'healthy') {
+                  results.overallStatus = 'degraded';
+                  results.errors.push(`API Status: ${results.checks.apiStatus.error}`);
+                }
+              }
+              
+              // Data Freshness Check
+              if (CHECK_TYPE === 'full' || CHECK_TYPE === 'data_freshness') {
+                results.checks.dataFreshness = await checkDataFreshness();
+                if (results.checks.dataFreshness.status === 'missing' || 
+                    results.checks.dataFreshness.status === 'corrupt') {
+                  results.overallStatus = 'unhealthy';
+                  results.errors.push(`Data Status: ${results.checks.dataFreshness.error}`);
+                } else if (results.checks.dataFreshness.warning) {
+                  results.overallStatus = 'degraded';
+                  results.warnings.push(`Data Freshness: ${results.checks.dataFreshness.warning}`);
+                }
+              }
+              
+              // Website Status Check
+              if (CHECK_TYPE === 'full' || CHECK_TYPE === 'website_status') {
+                results.checks.websiteStatus = await checkWebsiteStatus();
+                if (results.checks.websiteStatus.status !== 'healthy') {
+                  results.overallStatus = 'unhealthy';
+                  results.errors.push(`Website Status: Missing files: ${results.checks.websiteStatus.missingFiles.join(', ')}`);
+                }
+              }
+              
+              // Workflow Status Check
+              if (CHECK_TYPE === 'full') {
+                results.checks.workflowStatus = await checkWorkflowStatus();
+                if (results.checks.workflowStatus.status !== 'healthy') {
+                  results.overallStatus = 'degraded';
+                  results.warnings.push(`Workflow Status: Missing workflows: ${results.checks.workflowStatus.missingWorkflows.join(', ')}`);
+                }
+              }
+              
+              results.duration = Date.now() - startTime;
+              
+              // Write health check results
+              const resultsPath = 'health-check-results.json';
+              fs.writeFileSync(resultsPath, JSON.stringify(results, null, 2));
+              
+              console.log(`\n🏥 Health Check Results:`);
+              console.log(`Overall Status: ${results.overallStatus.toUpperCase()}`);
+              console.log(`Duration: ${results.duration}ms`);
+              
+              if (results.errors.length > 0) {
+                console.log(`\n❌ Errors:`);
+                results.errors.forEach(error => console.log(`  - ${error}`));
+              }
+              
+              if (results.warnings.length > 0) {
+                console.log(`\n⚠️ Warnings:`);
+                results.warnings.forEach(warning => console.log(`  - ${warning}`));
+              }
+              
+              if (results.overallStatus === 'healthy' && results.warnings.length === 0) {
+                console.log(`\n✅ All systems healthy!`);
+              }
+              
+              return results;
+              
+            } catch (error) {
+              console.error('Health check failed:', error.message);
+              return {
+                timestamp: new Date().toISOString(),
+                checkType: CHECK_TYPE,
+                overallStatus: 'error',
+                error: error.message,
+                duration: Date.now() - startTime
+              };
+            }
+          }
+          
+          performHealthCheck()
+            .then(results => {
+              // Write results to file for next step
+              fs.writeFileSync('health-results.json', JSON.stringify(results));
+              
+              if (results.overallStatus === 'healthy') {
+                console.log('Health check completed successfully');
+                process.exit(0);
+              } else {
+                console.log(`Health check completed with status: ${results.overallStatus}`);
+                process.exit(1);
+              }
+            })
+            .catch(error => {
+              console.error('Unexpected error during health check:', error);
+              process.exit(1);
+            });
+          JS
+
+          node health-check.js
+          
+      - name: Upload health check results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: health-check-results
+          path: health-check-results.json
+          
+      - name: Create health check summary
+        if: always()
+        run: |
+          if [ -f health-results.json ]; then
+            RESULTS=$(cat health-results.json)
+            STATUS=$(echo "$RESULTS" | jq -r '.overallStatus // "unknown"')
+            
+            echo "## 🏥 Health Check Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Overall Status:** $STATUS" >> $GITHUB_STEP_SUMMARY
+            echo "**Check Type:** ${{ github.event.inputs.check_type || github.event.action || 'full' }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Add detailed results based on check type
+            if echo "$RESULTS" | jq -e '.checks.dataFreshness' > /dev/null; then
+              DATA_STATUS=$(echo "$RESULTS" | jq -r '.checks.dataFreshness.status')
+              DEVICE_COUNT=$(echo "$RESULTS" | jq -r '.checks.dataFreshness.deviceCount // 0')
+              LAST_TRIGGER=$(echo "$RESULTS" | jq -r '.checks.dataFreshness.lastTrigger // "unknown"')
+              
+              echo "### 📊 Data Status" >> $GITHUB_STEP_SUMMARY
+              echo "- **Status:** $DATA_STATUS" >> $GITHUB_STEP_SUMMARY
+              echo "- **Device Count:** $DEVICE_COUNT" >> $GITHUB_STEP_SUMMARY
+              echo "- **Last Trigger:** $LAST_TRIGGER" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if echo "$RESULTS" | jq -e '.checks.apiStatus' > /dev/null; then
+              API_STATUS=$(echo "$RESULTS" | jq -r '.checks.apiStatus.status')
+              echo "### 🔌 API Status" >> $GITHUB_STEP_SUMMARY
+              echo "- **Status:** $API_STATUS" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if echo "$RESULTS" | jq -e '.warnings[]' > /dev/null; then
+              echo "### ⚠️ Warnings" >> $GITHUB_STEP_SUMMARY
+              echo "$RESULTS" | jq -r '.warnings[]' | while read -r warning; do
+                echo "- $warning" >> $GITHUB_STEP_SUMMARY
+              done
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if echo "$RESULTS" | jq -e '.errors[]' > /dev/null; then
+              echo "### ❌ Errors" >> $GITHUB_STEP_SUMMARY
+              echo "$RESULTS" | jq -r '.errors[]' | while read -r error; do
+                echo "- $error" >> $GITHUB_STEP_SUMMARY
+              done
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            echo "### 🔗 Workflow Details" >> $GITHUB_STEP_SUMMARY
+            echo "- **Repository:** ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Run ID:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+            
+            # Set job status based on health check results
+            if [ "$STATUS" = "unhealthy" ] || [ "$STATUS" = "error" ]; then
+              echo "❌ Health check failed with status: $STATUS"
+              exit 1
+            elif [ "$STATUS" = "degraded" ]; then
+              echo "⚠️ Health check completed with warnings"
+              exit 0
+            else
+              echo "✅ Health check passed"
+              exit 0
+            fi
+          else
+            echo "❌ Health check results not found"
+            exit 1
+          fi

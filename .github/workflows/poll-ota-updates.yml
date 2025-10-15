@@ -1,81 +1,161 @@
-name: Fetch device JSONs
+name: Poll OTA Repository for Updates
 
 on:
   schedule:
-    - cron: '0 */12 * * *'   # every 12 hours (reduced frequency due to polling workflow)
+    # Run every 15 minutes instead of 6 hours
+    - cron: '*/15 * * * *'
   workflow_dispatch:
-  repository_dispatch:
-    types: [ota-update, ota-device-update]
+    inputs:
+      force_update:
+        description: 'Force update even if no changes detected'
+        required: false
+        default: false
+        type: boolean
+      check_interval:
+        description: 'Check for changes in the last N minutes'
+        required: false
+        default: '30'
+        type: string
 
 jobs:
-  fetch:
+  poll-and-update:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           persist-credentials: true
+          
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - name: Process webhook payload
-        id: webhook
-        if: github.event_name == 'repository_dispatch'
-        run: |
-          echo "Webhook event type: ${{ github.event.action }}"
-          echo "Webhook client payload: ${{ toJson(github.event.client_payload) }}"
           
-          # Check if this is a relevant update
-          if [[ "${{ github.event.action }}" == "ota-update" ]] || [[ "${{ github.event.action }}" == "ota-device-update" ]]; then
-            echo "should_update=true" >> $GITHUB_OUTPUT
-            echo "trigger_reason=webhook" >> $GITHUB_OUTPUT
-            
-            # Extract changed files if available in payload
-            CHANGED_FILES="${{ github.event.client_payload.changed_files }}"
-            if [[ -n "$CHANGED_FILES" ]]; then
-              echo "changed_files=$CHANGED_FILES" >> $GITHUB_OUTPUT
-              # Check if any JSON files were changed
-              if echo "$CHANGED_FILES" | grep -q "\.json$"; then
-                echo "json_files_changed=true" >> $GITHUB_OUTPUT
-              else
-                echo "json_files_changed=false" >> $GITHUB_OUTPUT
-              fi
-            else
-              echo "changed_files=" >> $GITHUB_OUTPUT
-              echo "json_files_changed=true" >> $GITHUB_OUTPUT  # Assume JSON files changed if not specified
-            fi
-          else
-            echo "should_update=false" >> $GITHUB_OUTPUT
-            echo "trigger_reason=unrecognized_webhook" >> $GITHUB_OUTPUT
-          fi
-          
-      - name: Check if update is needed
-        id: check_update
-        if: github.event_name != 'repository_dispatch' || steps.webhook.outputs.should_update == 'true'
-        run: |
-          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
-            if [[ "${{ steps.webhook.outputs.json_files_changed }}" == "false" ]]; then
-              echo "No JSON files were changed, skipping update"
-              echo "should_proceed=false" >> $GITHUB_OUTPUT
-            else
-              echo "JSON files were changed, proceeding with update"
-              echo "should_proceed=true" >> $GITHUB_OUTPUT
-              echo "trigger_reason=${{ steps.webhook.outputs.trigger_reason }}" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "Scheduled or manual trigger, proceeding with update"
-            echo "should_proceed=true" >> $GITHUB_OUTPUT
-            echo "trigger_reason=${{ github.event_name }}" >> $GITHUB_OUTPUT
-          fi
-          
-      - name: Fetch and aggregate device JSONs
-        if: steps.check_update.outputs.should_proceed == 'true'
+      - name: Check for OTA repository changes
+        id: check_changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TRIGGER_REASON: ${{ steps.check_update.outputs.trigger_reason }}
+          FORCE_UPDATE: ${{ github.event.inputs.force_update || 'false' }}
+          CHECK_INTERVAL: ${{ github.event.inputs.check_interval || '30' }}
         run: |
-          # write a JS script using a quoted heredoc to avoid shell quoting/escaping issues
+          # write a JS script to check for recent changes
+          cat > check-changes.js <<'JS'
+          const https = require('https');
+          const fs = require('fs');
+          
+          const OTA_REPO = 'AlphaDroid-devices/OTA';
+          const CHECK_INTERVAL = parseInt(process.env.CHECK_INTERVAL) || 30; // minutes
+          const FORCE_UPDATE = process.env.FORCE_UPDATE === 'true';
+          const TOKEN = process.env.GITHUB_TOKEN;
+          
+          const opts = {
+            headers: {
+              'User-Agent': 'AlphaDroid-Poll-Bot/1.0',
+              'Accept': 'application/vnd.github.v3+json',
+              'Authorization': `token ${TOKEN}`
+            }
+          };
+          
+          function apiRequest(url) {
+            return new Promise((resolve, reject) => {
+              https.get(url, opts, (response) => {
+                let data = '';
+                response.on('data', chunk => data += chunk);
+                response.on('end', () => {
+                  if (response.statusCode >= 200 && response.statusCode < 300) {
+                    resolve(JSON.parse(data));
+                  } else {
+                    reject(new Error(`API request failed: ${response.statusCode}`));
+                  }
+                });
+              }).on('error', reject);
+            });
+          }
+          
+          async function checkForChanges() {
+            try {
+              console.log(`Checking for changes in the last ${CHECK_INTERVAL} minutes...`);
+              
+              // Get recent commits from OTA repository
+              const commitsUrl = `https://api.github.com/repos/${OTA_REPO}/commits?since=${new Date(Date.now() - CHECK_INTERVAL * 60 * 1000).toISOString()}`;
+              const commits = await apiRequest(commitsUrl);
+              
+              console.log(`Found ${commits.length} recent commits`);
+              
+              if (commits.length === 0 && !FORCE_UPDATE) {
+                console.log('No recent commits found, skipping update');
+                process.exit(0);
+              }
+              
+              // Check if any commits modified JSON files
+              let hasJsonChanges = false;
+              if (commits.length > 0) {
+                for (const commit of commits.slice(0, 5)) { // Check last 5 commits
+                  try {
+                    const commitDetails = await apiRequest(commit.url);
+                    const files = commitDetails.files || [];
+                    
+                    const jsonFiles = files.filter(file => 
+                      file.filename.toLowerCase().endsWith('.json') && 
+                      (file.status === 'modified' || file.status === 'added')
+                    );
+                    
+                    if (jsonFiles.length > 0) {
+                      console.log(`Found JSON changes in commit ${commit.sha}: ${jsonFiles.map(f => f.filename).join(', ')}`);
+                      hasJsonChanges = true;
+                      break;
+                    }
+                  } catch (error) {
+                    console.warn(`Failed to get details for commit ${commit.sha}:`, error.message);
+                  }
+                }
+              }
+              
+              if (!hasJsonChanges && !FORCE_UPDATE) {
+                console.log('No JSON file changes detected in recent commits');
+                process.exit(0);
+              }
+              
+              console.log('JSON file changes detected or force update requested, proceeding with update');
+              
+              // Write trigger info for next step
+              fs.writeFileSync('update-trigger.json', JSON.stringify({
+                hasChanges: true,
+                commitCount: commits.length,
+                hasJsonChanges,
+                forceUpdate: FORCE_UPDATE,
+                checkedAt: new Date().toISOString(),
+                checkInterval: CHECK_INTERVAL
+              }));
+              
+            } catch (error) {
+              console.error('Error checking for changes:', error.message);
+              if (FORCE_UPDATE) {
+                console.log('Force update requested, proceeding despite error');
+                fs.writeFileSync('update-trigger.json', JSON.stringify({
+                  hasChanges: true,
+                  error: error.message,
+                  forceUpdate: true,
+                  checkedAt: new Date().toISOString()
+                }));
+              } else {
+                process.exit(1);
+              }
+            }
+          }
+          
+          checkForChanges();
+          JS
+          
+          node check-changes.js
+          
+      - name: Fetch and update device data
+        if: steps.check_changes.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIGGER_REASON: ${{ github.event_name == 'workflow_dispatch' && 'manual_poll' || 'scheduled_poll' }}
+        run: |
+          # Use the same enhanced fetch script from the main workflow
           mkdir -p .github/scripts
           cat > .github/scripts/fetch-devices.js <<'JS'
           const https = require('https');
@@ -110,7 +190,6 @@ jobs:
                         url 
                       });
                     } else if (response.statusCode === 403 && retryCount > 0) {
-                      // Rate limit, wait and retry
                       console.warn(`Rate limited, retrying in ${(4 - retryCount) * 2} seconds... (${retryCount} retries left)`);
                       setTimeout(() => attempt(retryCount - 1), (4 - retryCount) * 2000);
                     } else {
@@ -153,7 +232,7 @@ jobs:
               
               const items = JSON.parse(listResp.body)
                 .filter(item => item.type === 'file' && item.name.toLowerCase().endsWith('.json'))
-                .sort((a, b) => a.name.localeCompare(b.name)); // Sort for consistent ordering
+                .sort((a, b) => a.name.localeCompare(b.name));
               
               console.log(`Found ${items.length} JSON files to process`);
               
@@ -166,7 +245,6 @@ jobs:
               let successCount = 0;
               let errorCount = 0;
               
-              // Process files in batches to avoid overwhelming the API
               const batchSize = 5;
               for (let i = 0; i < items.length; i += batchSize) {
                 const batch = items.slice(i, i + batchSize);
@@ -177,7 +255,6 @@ jobs:
                     const response = await get(item.download_url);
                     const data = JSON.parse(response.body);
                     
-                    // Validate that this looks like a device JSON
                     if (!data || typeof data !== 'object') {
                       throw new Error('Invalid JSON structure');
                     }
@@ -201,7 +278,6 @@ jobs:
                 
                 await Promise.all(batchPromises);
                 
-                // Small delay between batches to be respectful to the API
                 if (i + batchSize < items.length) {
                   await new Promise(resolve => setTimeout(resolve, 100));
                 }
@@ -212,13 +288,11 @@ jobs:
                 return { success: false, error: 'All fetches failed' };
               }
               
-              // Ensure data directory exists
               const dataDir = 'data';
               if (!fs.existsSync(dataDir)) {
                 fs.mkdirSync(dataDir, { recursive: true });
               }
               
-              // Write the aggregated data
               const outputPath = path.join(dataDir, 'devices.json');
               const outputData = {
                 metadata: {
@@ -254,7 +328,6 @@ jobs:
             }
           }
 
-          // Execute the fetch
           fetchDeviceFiles()
             .then(result => {
               if (result.success) {
@@ -273,9 +346,9 @@ jobs:
 
           echo "Trigger reason: $TRIGGER_REASON"
           node .github/scripts/fetch-devices.js
-
+          
       - name: Commit and push changes
-        if: steps.check_update.outputs.should_proceed == 'true'
+        if: steps.check_changes.outcome == 'success'
         id: commit
         run: |
           git config user.name "github-actions[bot]"
@@ -286,16 +359,11 @@ jobs:
             echo "No changes to commit"
             echo "has_changes=false" >> $GITHUB_OUTPUT
           else
-            # Generate a more descriptive commit message
-            TRIGGER="${{ steps.check_update.outputs.trigger_reason }}"
-            if [[ "$TRIGGER" == "webhook" ]]; then
-              COMMIT_MSG="chore: update device data from OTA repository webhook [skip ci]"
-            elif [[ "$TRIGGER" == "schedule" ]]; then
-              COMMIT_MSG="chore: scheduled update of device data [skip ci]"
-            elif [[ "$TRIGGER" == "workflow_dispatch" ]]; then
-              COMMIT_MSG="chore: manual update of device data [skip ci]"
+            TRIGGER="${{ github.event_name == 'workflow_dispatch' && 'manual_poll' || 'scheduled_poll' }}"
+            if [[ "$TRIGGER" == "manual_poll" ]]; then
+              COMMIT_MSG="chore: manual poll update of device data [skip ci]"
             else
-              COMMIT_MSG="chore: update aggregated devices.json [skip ci]"
+              COMMIT_MSG="chore: scheduled poll update of device data [skip ci]"
             fi
             
             git commit -m "$COMMIT_MSG"
@@ -305,23 +373,24 @@ jobs:
           fi
           
       - name: Create summary
-        if: always() && steps.check_update.outputs.should_proceed == 'true'
+        if: always()
         run: |
-          echo "## Device Data Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## OTA Repository Poll Update Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Trigger:** ${{ steps.check_update.outputs.trigger_reason }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Changes Committed:** ${{ steps.commit.outputs.has_changes }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Changes Committed:** ${{ steps.commit.outputs.has_changes || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [[ "${{ job.status }}" == "success" ]]; then
-            echo "✅ **Success:** Device data updated successfully" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Success:** OTA repository poll completed successfully" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ **Failed:** Device data update failed" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Failed:** OTA repository poll failed" >> $GITHUB_STEP_SUMMARY
           fi
           
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Workflow Details" >> $GITHUB_STEP_SUMMARY
+          echo "### Poll Details" >> $GITHUB_STEP_SUMMARY
           echo "- **Repository:** AlphaDroid-devices/OTA" >> $GITHUB_STEP_SUMMARY
+          echo "- **Poll Interval:** Every 15 minutes" >> $GITHUB_STEP_SUMMARY
           echo "- **Target File:** data/devices.json" >> $GITHUB_STEP_SUMMARY
           echo "- **Workflow Run:** [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,407 @@
+name: Manual Device Data Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Type of update to perform'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - incremental
+          - force
+          - dry_run
+      check_recent:
+        description: 'Check for changes in the last N minutes (0 = check all)'
+        required: false
+        default: '60'
+        type: string
+      specific_files:
+        description: 'Specific JSON files to update (comma-separated, empty = all)'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  manual-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Validate inputs
+        id: validate
+        run: |
+          UPDATE_TYPE="${{ github.event.inputs.update_type }}"
+          CHECK_RECENT="${{ github.event.inputs.check_recent }}"
+          SPECIFIC_FILES="${{ github.event.inputs.specific_files }}"
+          
+          echo "update_type=$UPDATE_TYPE" >> $GITHUB_OUTPUT
+          echo "check_recent=$CHECK_RECENT" >> $GITHUB_OUTPUT
+          echo "specific_files=$SPECIFIC_FILES" >> $GITHUB_OUTPUT
+          
+          # Validate check_recent is a number
+          if ! [[ "$CHECK_RECENT" =~ ^[0-9]+$ ]]; then
+            echo "Error: check_recent must be a number"
+            exit 1
+          fi
+          
+          echo "✅ Input validation passed"
+          echo "Update type: $UPDATE_TYPE"
+          echo "Check recent: $CHECK_RECENT minutes"
+          echo "Specific files: ${SPECIFIC_FILES:-'all'}"
+          
+      - name: Perform update based on type
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPDATE_TYPE: ${{ steps.validate.outputs.update_type }}
+          CHECK_RECENT: ${{ steps.validate.outputs.check_recent }}
+          SPECIFIC_FILES: ${{ steps.validate.outputs.specific_files }}
+        run: |
+          # Create the appropriate update script based on type
+          cat > update-devices.js <<'JS'
+          const https = require('https');
+          const fs = require('fs');
+          const path = require('path');
+          
+          const OTA_REPO = 'AlphaDroid-devices/OTA';
+          const API_BASE = `https://api.github.com/repos/${OTA_REPO}`;
+          const API_CONTENTS = `${API_BASE}/contents/`;
+          const TOKEN = process.env.GITHUB_TOKEN;
+          const UPDATE_TYPE = process.env.UPDATE_TYPE;
+          const CHECK_RECENT = parseInt(process.env.CHECK_RECENT);
+          const SPECIFIC_FILES = process.env.SPECIFIC_FILES ? process.env.SPECIFIC_FILES.split(',').map(f => f.trim()) : [];
+          
+          const opts = { 
+            headers: { 
+              'User-Agent': 'AlphaDroid-Manual-Bot/1.0',
+              'Accept': 'application/vnd.github.v3+json',
+              ...(TOKEN ? { 'Authorization': `token ${TOKEN}` } : {})
+            }
+          };
+          
+          function get(url, retries = 3) {
+            return new Promise((resolve, reject) => {
+              const attempt = (retryCount) => {
+                const request = https.get(url, opts, response => {
+                  let body = '';
+                  response.on('data', chunk => body += chunk);
+                  response.on('end', () => {
+                    if (response.statusCode >= 200 && response.statusCode < 300) {
+                      resolve({ 
+                        statusCode: response.statusCode, 
+                        headers: response.headers, 
+                        body,
+                        url 
+                      });
+                    } else if (response.statusCode === 403 && retryCount > 0) {
+                      console.warn(`Rate limited, retrying in ${(4 - retryCount) * 2} seconds... (${retryCount} retries left)`);
+                      setTimeout(() => attempt(retryCount - 1), (4 - retryCount) * 2000);
+                    } else {
+                      reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage} for ${url}`));
+                    }
+                  });
+                });
+                
+                request.on('error', error => {
+                  if (retryCount > 0) {
+                    console.warn(`Network error, retrying... (${retryCount} retries left)`, error.message);
+                    setTimeout(() => attempt(retryCount - 1), 1000);
+                  } else {
+                    reject(error);
+                  }
+                });
+                
+                request.setTimeout(30000, () => {
+                  request.destroy();
+                  if (retryCount > 0) {
+                    console.warn(`Timeout, retrying... (${retryCount} retries left)`);
+                    setTimeout(() => attempt(retryCount - 1), 1000);
+                  } else {
+                    reject(new Error('Request timeout'));
+                  }
+                });
+              };
+              
+              attempt(retries);
+            });
+          }
+          
+          async function getRecentCommits() {
+            if (CHECK_RECENT === 0) return [];
+            
+            const since = new Date(Date.now() - CHECK_RECENT * 60 * 1000).toISOString();
+            const commitsUrl = `${API_BASE}/commits?since=${since}`;
+            
+            try {
+              const commits = await get(commitsUrl);
+              return JSON.parse(commits.body);
+            } catch (error) {
+              console.warn('Failed to get recent commits:', error.message);
+              return [];
+            }
+          }
+          
+          async function getChangedFiles(commits) {
+            const changedFiles = new Set();
+            
+            for (const commit of commits.slice(0, 10)) { // Check last 10 commits
+              try {
+                const commitDetails = await get(commit.url);
+                const files = JSON.parse(commitDetails.body).files || [];
+                
+                files.forEach(file => {
+                  if (file.filename.toLowerCase().endsWith('.json') && 
+                      (file.status === 'modified' || file.status === 'added')) {
+                    changedFiles.add(file.filename);
+                  }
+                });
+              } catch (error) {
+                console.warn(`Failed to get details for commit ${commit.sha}:`, error.message);
+              }
+            }
+            
+            return Array.from(changedFiles);
+          }
+          
+          async function updateDevices() {
+            console.log(`Starting ${UPDATE_TYPE} update...`);
+            const startTime = Date.now();
+            
+            try {
+              let filesToUpdate = [];
+              
+              if (UPDATE_TYPE === 'dry_run') {
+                console.log('🔍 DRY RUN MODE - No changes will be made');
+              }
+              
+              if (SPECIFIC_FILES.length > 0) {
+                filesToUpdate = SPECIFIC_FILES;
+                console.log(`📁 Updating specific files: ${filesToUpdate.join(', ')}`);
+              } else if (UPDATE_TYPE === 'incremental') {
+                console.log(`🔄 Incremental update - checking last ${CHECK_RECENT} minutes`);
+                const recentCommits = await getRecentCommits();
+                console.log(`Found ${recentCommits.length} recent commits`);
+                
+                if (recentCommits.length === 0) {
+                  console.log('No recent commits found, skipping update');
+                  return { success: true, skipped: true, reason: 'No recent commits' };
+                }
+                
+                const changedFiles = await getChangedFiles(recentCommits);
+                if (changedFiles.length === 0) {
+                  console.log('No JSON files changed in recent commits, skipping update');
+                  return { success: true, skipped: true, reason: 'No JSON files changed' };
+                }
+                
+                filesToUpdate = changedFiles;
+                console.log(`📝 Files to update: ${filesToUpdate.join(', ')}`);
+              } else {
+                console.log('🔄 Full update - fetching all JSON files');
+              }
+              
+              // Get all JSON files from repository
+              console.log('Fetching repository contents...');
+              const listResp = await get(API_CONTENTS);
+              const allItems = JSON.parse(listResp.body)
+                .filter(item => item.type === 'file' && item.name.toLowerCase().endsWith('.json'))
+                .sort((a, b) => a.name.localeCompare(b.name));
+              
+              let itemsToProcess = allItems;
+              if (SPECIFIC_FILES.length > 0) {
+                itemsToProcess = allItems.filter(item => SPECIFIC_FILES.includes(item.name));
+                if (itemsToProcess.length === 0) {
+                  throw new Error(`None of the specified files found: ${SPECIFIC_FILES.join(', ')}`);
+                }
+              } else if (UPDATE_TYPE === 'incremental' && filesToUpdate.length > 0) {
+                itemsToProcess = allItems.filter(item => filesToUpdate.includes(item.name));
+              }
+              
+              console.log(`Found ${itemsToProcess.length} JSON files to process (out of ${allItems.length} total)`);
+              
+              if (itemsToProcess.length === 0) {
+                console.warn('No JSON files to process');
+                return { success: false, error: 'No JSON files to process' };
+              }
+              
+              if (UPDATE_TYPE === 'dry_run') {
+                console.log('🔍 DRY RUN - Would process these files:');
+                itemsToProcess.forEach(item => console.log(`  - ${item.name}`));
+                return { success: true, dryRun: true, fileCount: itemsToProcess.length };
+              }
+              
+              const results = [];
+              let successCount = 0;
+              let errorCount = 0;
+              
+              const batchSize = 5;
+              for (let i = 0; i < itemsToProcess.length; i += batchSize) {
+                const batch = itemsToProcess.slice(i, i + batchSize);
+                console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(itemsToProcess.length / batchSize)} (${batch.length} files)`);
+                
+                const batchPromises = batch.map(async (item) => {
+                  try {
+                    const response = await get(item.download_url);
+                    const data = JSON.parse(response.body);
+                    
+                    if (!data || typeof data !== 'object') {
+                      throw new Error('Invalid JSON structure');
+                    }
+                    
+                    results.push({
+                      name: item.name,
+                      data,
+                      rawUrl: item.download_url,
+                      lastModified: response.headers['last-modified'] || null,
+                      size: response.headers['content-length'] || null,
+                      sha: item.sha
+                    });
+                    
+                    successCount++;
+                    console.log(`✓ ${item.name}`);
+                  } catch (error) {
+                    errorCount++;
+                    console.error(`✗ ${item.name}: ${error.message}`);
+                  }
+                });
+                
+                await Promise.all(batchPromises);
+                
+                if (i + batchSize < itemsToProcess.length) {
+                  await new Promise(resolve => setTimeout(resolve, 100));
+                }
+              }
+              
+              if (results.length === 0) {
+                console.error('No device files were successfully fetched');
+                return { success: false, error: 'All fetches failed' };
+              }
+              
+              const dataDir = 'data';
+              if (!fs.existsSync(dataDir)) {
+                fs.mkdirSync(dataDir, { recursive: true });
+              }
+              
+              const outputPath = path.join(dataDir, 'devices.json');
+              const outputData = {
+                metadata: {
+                  fetchedAt: new Date().toISOString(),
+                  trigger: `manual_${UPDATE_TYPE}`,
+                  totalFiles: allItems.length,
+                  processedFiles: itemsToProcess.length,
+                  successfulFetches: successCount,
+                  failedFetches: errorCount,
+                  fetchDurationMs: Date.now() - startTime,
+                  updateType: UPDATE_TYPE,
+                  specificFiles: SPECIFIC_FILES.length > 0 ? SPECIFIC_FILES : null,
+                  checkRecent: CHECK_RECENT
+                },
+                devices: results
+              };
+              
+              fs.writeFileSync(outputPath, JSON.stringify(outputData, null, 2));
+              
+              const duration = Date.now() - startTime;
+              console.log(`\n✓ Successfully wrote ${outputPath}`);
+              console.log(`  Devices: ${results.length}/${itemsToProcess.length}`);
+              console.log(`  Duration: ${duration}ms`);
+              console.log(`  Success rate: ${((successCount / itemsToProcess.length) * 100).toFixed(1)}%`);
+              
+              return { 
+                success: true, 
+                deviceCount: results.length,
+                totalFiles: allItems.length,
+                processedFiles: itemsToProcess.length,
+                successRate: (successCount / itemsToProcess.length) * 100,
+                duration,
+                updateType: UPDATE_TYPE
+              };
+              
+            } catch (error) {
+              console.error('Fatal error during update:', error.message);
+              return { success: false, error: error.message };
+            }
+          }
+          
+          updateDevices()
+            .then(result => {
+              if (result.success) {
+                if (result.skipped) {
+                  console.log(`Update skipped: ${result.reason}`);
+                } else if (result.dryRun) {
+                  console.log(`Dry run completed - would update ${result.fileCount} files`);
+                } else {
+                  console.log('Device update completed successfully');
+                }
+                process.exit(0);
+              } else {
+                console.error('Device update failed:', result.error);
+                process.exit(1);
+              }
+            })
+            .catch(error => {
+              console.error('Unexpected error:', error);
+              process.exit(1);
+            });
+          JS
+
+          node update-devices.js
+          
+      - name: Commit and push changes
+        if: steps.validate.outputs.update_type != 'dry_run'
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/devices.json || true
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            UPDATE_TYPE="${{ steps.validate.outputs.update_type }}"
+            COMMIT_MSG="chore: manual $UPDATE_TYPE update of device data [skip ci]"
+            
+            git commit -m "$COMMIT_MSG"
+            git push
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes committed and pushed successfully"
+          fi
+          
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## Manual Device Data Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Update Type:** ${{ steps.validate.outputs.update_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Check Recent:** ${{ steps.validate.outputs.check_recent }} minutes" >> $GITHUB_STEP_SUMMARY
+          echo "**Specific Files:** ${{ steps.validate.outputs.specific_files || 'All files' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Changes Committed:** ${{ steps.commit.outputs.has_changes || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ job.status }}" == "success" ]]; then
+            if [[ "${{ steps.validate.outputs.update_type }}" == "dry_run" ]]; then
+              echo "🔍 **Dry Run Completed:** No changes were made" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "✅ **Success:** Manual update completed successfully" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ **Failed:** Manual update failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Update Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository:** AlphaDroid-devices/OTA" >> $GITHUB_STEP_SUMMARY
+          echo "- **Update Type:** ${{ steps.validate.outputs.update_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered By:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow Run:** [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
