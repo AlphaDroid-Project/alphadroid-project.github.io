@@ -871,34 +871,40 @@ async function loadDevices(limit = 0) {
         const dbResp = await fetch('data/device_db.json', { cache: 'no-cache' }).catch(() => null);
         if (dbResp && dbResp.ok) {
             const db = await dbResp.json();
-            const overrides = (db && db.overrides) ? db.overrides : {};
+            const overrides = (db && typeof db === 'object' && db.overrides && typeof db.overrides === 'object') ? db.overrides : {};
 
             // NEW: collect hidden codenames (support both "hide" and "hidden")
             const hiddenLower = new Set(
-                Object.entries(overrides)
-                    .filter(([, ov]) => ov && (ov.hide === true || ov.hidden === true))
-                    .map(([k]) => k.toLowerCase())
+                (overrides && typeof overrides === 'object') ? 
+                    Object.entries(overrides)
+                        .filter(([, ov]) => ov && (ov.hide === true || ov.hidden === true))
+                        .map(([k]) => k.toLowerCase()) : 
+                    []
             );
 
             // NEW: expose alias maps globally for search and rendering (skip hidden)
             const aliasMap = {};
-            Object.keys(overrides).forEach(k => {
-                if (hiddenLower.has(k.toLowerCase())) return; // skip hidden
-                const arr = Array.isArray(overrides[k].aliases) ? overrides[k].aliases : [];
-                if (arr.length) aliasMap[k.toLowerCase()] = arr.map(a => String(a).toLowerCase());
-            });
+            if (overrides && typeof overrides === 'object') {
+                Object.keys(overrides).forEach(k => {
+                    if (hiddenLower.has(k.toLowerCase())) return; // skip hidden
+                    const arr = Array.isArray(overrides[k].aliases) ? overrides[k].aliases : [];
+                    if (arr.length) aliasMap[k.toLowerCase()] = arr.map(a => String(a).toLowerCase());
+                });
+            }
             window.__aliasMap = aliasMap;
             window.__aliasReverse = {};
             Object.entries(aliasMap).forEach(([parent, arr]) => arr.forEach(a => window.__aliasReverse[a] = parent));
 
             // NEW: also expose full overrides globally (lowercased keys, skip hidden)
             window.__overrides = {};
-            Object.keys(overrides).forEach(k => {
-                if (!hiddenLower.has(k.toLowerCase())) window.__overrides[k.toLowerCase()] = overrides[k];
-            });
+            if (overrides && typeof overrides === 'object') {
+                Object.keys(overrides).forEach(k => {
+                    if (!hiddenLower.has(k.toLowerCase())) window.__overrides[k.toLowerCase()] = overrides[k];
+                });
+            }
 
             // NEW: build alias set so alias codenames are not rendered as separate cards (skip hidden)
-            const keys = Object.keys(overrides);
+            const keys = (overrides && typeof overrides === 'object') ? Object.keys(overrides) : [];
             const aliasSet = new Set();
             keys.forEach(k => {
                 if (hiddenLower.has(k.toLowerCase())) return; // skip hidden
@@ -930,7 +936,7 @@ async function loadDevices(limit = 0) {
             const entries = parentKeys.map(key => {
                 const ov = overrides[key] || {};
                 const lower = key.toLowerCase();
-                const found = (devicesList || []).find(it => ((it.name || '').replace(/\.json$/i, '').toLowerCase() === lower));
+                const found = (Array.isArray(devicesList) ? devicesList : []).find(it => ((it.name || '').replace(/\.json$/i, '').toLowerCase() === lower));
                 if (found) {
                     // Use the upstream response but apply override fields to the first response object
                     const respArr = (found.data && Array.isArray(found.data.response)) ? found.data.response.slice() : (found.data ? [found.data] : []);
