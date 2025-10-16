@@ -232,21 +232,49 @@ jobs:
                 devices: results
               };
               
-              fs.writeFileSync(outputPath, JSON.stringify(outputData, null, 2));
-              
+              // Compare device-level data with existing file before writing to avoid spurious commits
+              let shouldWrite = true;
+              try {
+                if (fs.existsSync(outputPath)) {
+                  const existing = fs.readFileSync(outputPath, 'utf8');
+                  const existingJson = JSON.parse(existing);
+                  if (JSON.stringify(existingJson.devices) === JSON.stringify(outputData.devices)) {
+                    console.log('No device-level changes detected; skipping write.');
+                    shouldWrite = false;
+                  }
+                }
+              } catch (err) {
+                console.warn('Comparison failed:', err.message);
+                shouldWrite = true;
+              }
+
               const duration = Date.now() - startTime;
-              console.log(`\n✓ Successfully wrote ${outputPath}`);
-              console.log(`  Devices: ${results.length}/${items.length}`);
-              console.log(`  Duration: ${duration}ms`);
-              console.log(`  Success rate: ${((successCount / items.length) * 100).toFixed(1)}%`);
-              
-              return { 
-                success: true, 
-                deviceCount: results.length,
-                totalFiles: items.length,
-                successRate: (successCount / items.length) * 100,
-                duration
-              };
+
+              if (shouldWrite) {
+                fs.writeFileSync(outputPath, JSON.stringify(outputData, null, 2));
+                console.log(`\n✓ Successfully wrote ${outputPath}`);
+                console.log(`  Devices: ${results.length}/${items.length}`);
+                console.log(`  Duration: ${duration}ms`);
+                console.log(`  Success rate: ${((successCount / items.length) * 100).toFixed(1)}%`);
+
+                return { 
+                  success: true, 
+                  deviceCount: results.length,
+                  totalFiles: items.length,
+                  successRate: (successCount / items.length) * 100,
+                  duration
+                };
+              } else {
+                console.log(`Skipped writing ${outputPath} — device data unchanged.`);
+                return {
+                  success: true,
+                  skipped: true,
+                  reason: 'No device-level changes',
+                  deviceCount: results.length,
+                  totalFiles: items.length,
+                  duration
+                };
+              }
               
             } catch (error) {
               console.error('Fatal error during fetch:', error.message);
@@ -280,10 +308,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/devices.json || true
-          
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
+          git add --force data/devices.json || true
+
+          if git diff --quiet HEAD -- data/devices.json; then
+            echo "No changes to commit (data/devices.json unchanged)"
             echo "has_changes=false" >> $GITHUB_OUTPUT
           else
             # Generate a more descriptive commit message
