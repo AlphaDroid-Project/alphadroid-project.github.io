@@ -314,8 +314,18 @@ jobs:
                 if (fs.existsSync(outputPath)) {
                   const existing = fs.readFileSync(outputPath, 'utf8');
                   const existingJson = JSON.parse(existing);
-                  if (JSON.stringify(existingJson.devices) === JSON.stringify(outputData.devices)) {
-                    console.log('No device-level changes detected; skipping write.');
+
+                  const normalize = (devices) => (
+                    devices
+                      .map(d => ({ name: d.name, data: d.data }))
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                  );
+
+                  const existingNormalized = normalize(existingJson.devices || []);
+                  const outputNormalized = normalize(outputData.devices || []);
+
+                  if (JSON.stringify(existingNormalized) === JSON.stringify(outputNormalized)) {
+                    console.log('No device-level changes detected after normalizing; skipping write.');
                     shouldWrite = false;
                   }
                 }
