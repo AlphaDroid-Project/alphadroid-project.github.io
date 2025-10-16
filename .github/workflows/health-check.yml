@@ -329,7 +329,7 @@ jobs:
           
       - name: Upload health check results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: health-check-results
           path: health-check-results.json
