@@ -1344,13 +1344,89 @@ function hideOverlay() {
 // Create reusable modal elements
 const deviceDialog = document.createElement('dialog');
 deviceDialog.className = 'modal';
-deviceDialog.style.maxWidth = '90%';
-deviceDialog.style.width = '400px';
+deviceDialog.style.maxWidth = '95%';
+deviceDialog.style.width = '800px';
+deviceDialog.style.maxHeight = '90vh';
 deviceDialog.style.border = 'none';
 deviceDialog.style.borderRadius = '8px';
 deviceDialog.style.overflow = 'hidden';
 deviceDialog.style.zIndex = '100001'; // Above the overlay
+deviceDialog.style.display = 'flex';
+deviceDialog.style.flexDirection = 'column';
+deviceDialog.style.position = 'fixed';
+deviceDialog.style.top = '50%';
+deviceDialog.style.left = '50%';
+deviceDialog.style.transform = 'translate(-50%, -50%)';
 document.body.appendChild(deviceDialog);
+
+// Add responsive CSS for mobile
+const modalStyles = document.createElement('style');
+modalStyles.textContent = `
+    @media (max-width: 768px) {
+        dialog.modal {
+            width: 95% !important;
+            max-width: 95% !important;
+            max-height: 95vh !important;
+            margin: 0 !important;
+        }
+        
+        .modal-content {
+            padding: 12px !important;
+        }
+        
+        .modal-header {
+            padding: 12px 12px 0 12px !important;
+        }
+        
+        .modal-footer {
+            padding: 12px !important;
+        }
+        
+        .modal-content .grid {
+            gap: 8px !important;
+        }
+        
+        .modal-content .s12 {
+            padding: 4px !important;
+        }
+    }
+    
+    .modal-content::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .modal-content::-webkit-scrollbar-track {
+        background: var(--surface-container-low);
+        border-radius: 3px;
+    }
+    
+    .modal-content::-webkit-scrollbar-thumb {
+        background: var(--outline-variant);
+        border-radius: 3px;
+    }
+    
+    .modal-content::-webkit-scrollbar-thumb:hover {
+        background: var(--outline);
+    }
+    
+    #changelog-content::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    #changelog-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    #changelog-content::-webkit-scrollbar-thumb {
+        background: var(--outline-variant);
+        border-radius: 2px;
+    }
+    
+    #changelog-content::-webkit-scrollbar-thumb:hover {
+        background: var(--outline);
+    }
+`;
+document.head.appendChild(modalStyles);
 
 // NEW: Load device data in background without displaying
 async function loadDeviceDataInBackground() {
@@ -1429,6 +1505,85 @@ async function loadDeviceDataInBackground() {
         console.error('Failed to load device data in background:', error);
         window.__allDevicesRaw = [];
     }
+}
+
+// NEW: Function to toggle changelog visibility
+function toggleChangelog() {
+    const changelogContent = document.getElementById('changelog-content');
+    const changelogIcon = document.getElementById('changelog-icon');
+    const changelogToggleText = document.getElementById('changelog-toggle-text');
+    
+    if (!changelogContent || !changelogIcon || !changelogToggleText) return;
+    
+    const isExpanded = changelogContent.style.maxHeight && changelogContent.style.maxHeight !== '0px';
+    
+    if (isExpanded) {
+        // Collapse
+        changelogContent.style.maxHeight = '0px';
+        changelogContent.style.padding = '0 16px';
+        changelogContent.style.overflowY = 'hidden';
+        changelogContent.style.border = 'none';
+        changelogIcon.textContent = 'expand_more';
+        changelogToggleText.textContent = 'Show changelog';
+    } else {
+        // Expand - use responsive height
+        const maxHeight = window.innerWidth <= 768 ? '200px' : '300px';
+        changelogContent.style.maxHeight = maxHeight;
+        changelogContent.style.padding = '16px';
+        changelogContent.style.overflowY = 'auto';
+        changelogContent.style.border = '1px solid var(--outline-variant)';
+        changelogIcon.textContent = 'expand_less';
+        changelogToggleText.textContent = 'Hide changelog';
+    }
+}
+
+// Make toggleChangelog globally accessible
+window.toggleChangelog = toggleChangelog;
+
+// Add resize handler for responsive changelog height
+window.addEventListener('resize', () => {
+    const changelogContent = document.getElementById('changelog-content');
+    if (changelogContent && changelogContent.style.maxHeight && changelogContent.style.maxHeight !== '0px') {
+        const maxHeight = window.innerWidth <= 768 ? '200px' : '300px';
+        changelogContent.style.maxHeight = maxHeight;
+    }
+}, { passive: true });
+
+// NEW: Function to fetch changelog for a device
+async function fetchDeviceChangelog(codename) {
+    if (!codename) return null;
+    
+    // Try different branches and naming conventions
+    const branches = ['main', 'alpha-16.1', 'alpha-15.1', 'master'];
+    const baseUrls = branches.map(branch => `https://raw.githubusercontent.com/AlphaDroid-devices/OTA/${branch}`);
+    
+    const possibleUrls = [];
+    baseUrls.forEach(baseUrl => {
+        possibleUrls.push(`${baseUrl}/${codename}_changelog.txt`);
+        possibleUrls.push(`${baseUrl}/changelog_${codename}.txt`);
+    });
+    
+    for (const url of possibleUrls) {
+        try {
+            console.log(`Trying changelog URL: ${url}`);
+            const response = await fetch(url, { cache: 'no-cache' });
+            console.log(`Response status for ${url}: ${response.status}`);
+            if (response.ok) {
+                const content = await response.text();
+                if (content.trim()) { // Only return if content is not empty
+                    console.log(`Successfully loaded changelog from: ${url}`);
+                    return content.trim();
+                } else {
+                    console.log(`Empty content from: ${url}`);
+                }
+            }
+        } catch (error) {
+            console.warn(`Failed to fetch changelog from ${url}:`, error);
+        }
+    }
+    
+    console.log(`No changelog found for device: ${codename}`);
+    return null;
 }
 
 // Show device details in a modal dialog
@@ -1649,10 +1804,13 @@ async function showDeviceDetails(codename) {
             `;
         }
 
-        // Render modal
+        // Render modal with loading state for changelog
         deviceDialog.innerHTML = `
-            <h5>${displayName}</h5>
-            <div class="grid">
+            <div class="modal-header" style="flex-shrink: 0; padding: 16px 16px 0 16px;">
+                <h5 style="margin: 0;">${displayName}</h5>
+            </div>
+            <div class="modal-content" style="flex: 1; overflow-y: auto; padding: 16px;">
+                <div class="grid">
                 <div class="s12 m6">
                     <div class="row middle-align">
                         <i>smartphone</i>
@@ -1662,19 +1820,20 @@ async function showDeviceDetails(codename) {
                         </div>
                     </div>
 
-                    <div class="row middle-align">
-                        <i>info</i>
-                        <div class="max">
-                            <div class="bold">Model</div>
-                            <div>${escapeHtml(d.model || d.device || 'N/A')}</div>
-                        </div>
-                    </div>
 
                     <div class="row middle-align">
                         <i>update</i>
                         <div class="max">
                             <div class="bold">Latest</div>
                             <div id="device-latest">${escapeHtml(d.timestamp ? (new Date(Number(d.timestamp) * 1000).toISOString().split('T')[0]) : (d.version || 'Unknown'))}</div>
+                        </div>
+                    </div>
+
+                    <div class="row middle-align">
+                        <i>person</i>
+                        <div class="max">
+                            <div class="bold">Maintainer</div>
+                            <div>${(d.maintainer && typeof d.maintainer === 'object' && d.maintainer.url) ? `<a href="${escapeAttr(d.maintainer.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(d.maintainer.name || d.maintainer.url)}</a>` : escapeHtml((typeof d.maintainer === 'string' && d.maintainer) || (d.maintainer && (d.maintainer.name || d.maintainer.url)) || 'Unknown')}</div>
                         </div>
                     </div>
                 </div>
@@ -1695,14 +1854,6 @@ async function showDeviceDetails(codename) {
                             <div id="device-size">${escapeHtml(formatBytes(d.size || d.filesize || d.size_bytes || ''))}</div>
                         </div>
                     </div>
-
-                    <div class="row middle-align">
-                        <i>person</i>
-                        <div class="max">
-                            <div class="bold">Maintainer</div>
-                            <div>${(d.maintainer && typeof d.maintainer === 'object' && d.maintainer.url) ? `<a href="${escapeAttr(d.maintainer.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(d.maintainer.name || d.maintainer.url)}</a>` : escapeHtml((typeof d.maintainer === 'string' && d.maintainer) || (d.maintainer && (d.maintainer.name || d.maintainer.url)) || 'Unknown')}</div>
-                        </div>
-                    </div>
                 </div>
 
                 ${codeTabsHtml}
@@ -1717,8 +1868,27 @@ async function showDeviceDetails(codename) {
                             </div>
                         </div>
                     </div>
-
                 </div>
+                
+                <div class="s12">
+                    <div class="row">
+                        <i>history</i>
+                        <div class="max">
+                            <div class="bold">Changelog</div>
+                            <button id="changelog-toggle" class="chip small border" style="margin-top: 8px;" onclick="toggleChangelog()">
+                                <i id="changelog-icon">expand_more</i>
+                                <span id="changelog-toggle-text">Show changelog</span>
+                            </button>
+                            <div id="changelog-content" style="max-height: 0; overflow: hidden; background: var(--surface-container-low); padding: 0 16px; border-radius: 8px; margin-top: 8px; font-family: 'Roboto Mono', monospace; font-size: 0.85em; white-space: pre-wrap; line-height: 1.5; border: none; color: var(--on-surface-variant); transition: max-height 0.3s ease, padding 0.3s ease, border 0.3s ease; scrollbar-width: thin;">
+                                <div class="center-align" style="padding: 20px;">
+                                    <div class="loader"></div>
+                                    <div style="margin-top: 8px; font-size: 0.9em; opacity: 0.7;">Loading changelog...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="s12">
                     <div class="row center-align">
                         <div id="device-links-wrapper">
@@ -1726,12 +1896,13 @@ async function showDeviceDetails(codename) {
                         </div>
                     </div>
                 </div>
-                <div class="s12">
-                    <nav class="row right-align no-space">
-                        <button class="transparent link" onclick="this.closest('dialog').close(); hideOverlay(); if(window.location.hash.startsWith('#devices?codename=')) window.location.hash = '#devices';">Close</button>
-                        <button id="device-download" class="transparent link">Download</button>
-                    </nav>
                 </div>
+            </div>
+            <div class="modal-footer" style="flex-shrink: 0; padding: 16px;">
+                <nav class="row right-align no-space">
+                    <button class="transparent link" onclick="this.closest('dialog').close(); hideOverlay(); if(window.location.hash.startsWith('#devices?codename=')) window.location.hash = '#devices';">Close</button>
+                    <button id="device-download" class="transparent link">Download</button>
+                </nav>
             </div>
         `;
 
@@ -1794,6 +1965,50 @@ async function showDeviceDetails(codename) {
         showOverlay();
         if (typeof deviceDialog.show === 'function') deviceDialog.show();
         else if (typeof deviceDialog.showModal === 'function') deviceDialog.showModal();
+        
+        // Fetch changelog data asynchronously and update the content
+        fetchDeviceChangelog(rootCode).then(changelogContent => {
+            const changelogElement = deviceDialog.querySelector('#changelog-content');
+            const toggleButton = deviceDialog.querySelector('#changelog-toggle');
+            const toggleText = deviceDialog.querySelector('#changelog-toggle-text');
+            
+            if (changelogElement) {
+                if (changelogContent) {
+                    changelogElement.innerHTML = escapeHtml(changelogContent);
+                    if (toggleButton && toggleText) {
+                        toggleText.textContent = 'Show changelog';
+                    }
+                    // Add scroll indicator if content is long
+                    setTimeout(() => {
+                        if (changelogElement.scrollHeight > 300) {
+                            changelogElement.style.position = 'relative';
+                            changelogElement.style.setProperty('--scroll-indicator', 'linear-gradient(to bottom, transparent 0%, transparent 90%, var(--surface-container-low) 100%)');
+                        }
+                    }, 100);
+                } else {
+                    changelogElement.innerHTML = '<div class="center-align" style="padding: 20px; opacity: 0.7;">No changelog available for this device</div>';
+                    if (toggleButton && toggleText) {
+                        toggleText.textContent = 'No changelog available';
+                        toggleButton.disabled = true;
+                        toggleButton.style.opacity = '0.5';
+                    }
+                }
+            }
+        }).catch(error => {
+            console.warn('Failed to load changelog:', error);
+            const changelogElement = deviceDialog.querySelector('#changelog-content');
+            const toggleButton = deviceDialog.querySelector('#changelog-toggle');
+            const toggleText = deviceDialog.querySelector('#changelog-toggle-text');
+            
+            if (changelogElement) {
+                changelogElement.innerHTML = '<div class="center-align" style="padding: 20px; opacity: 0.7;">Changelog service unavailable</div>';
+            }
+            if (toggleButton && toggleText) {
+                toggleText.textContent = 'Service unavailable';
+                toggleButton.disabled = true;
+                toggleButton.style.opacity = '0.5';
+            }
+        });
         
         // NEW: Handle closing the modal - update URL to devices page
         const originalCloseHandler = deviceDialog.onclose;
