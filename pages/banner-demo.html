@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AlphaDroid Banner Generator Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Fonts (site already uses Roboto Flex; include here for standalone demo use) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --fg: #e8e6ef;
+      --muted: #b7b4c4;
+      --card: #171a20;
+      --accent: #7c6ef6;
+      --accent-2: #9c92ff;
+      --border: rgba(255,255,255,0.08);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; font-family: 'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif; }
+    html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--fg); }
+    header { padding: 24px; }
+    header h1 { margin: 0 0 6px; font-size: 22px; font-weight: 800; letter-spacing: 0.2px; }
+    header p { margin: 0; color: var(--muted); font-size: 13px; }
+    main { display: grid; gap: 20px; grid-template-columns: 380px 1fr; padding: 0 24px 24px; }
+    @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    form .group { margin-bottom: 14px; }
+    form label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    form input[type="text"],
+    form input[type="number"],
+    form input[type="url"],
+    form textarea,
+    form select {
+      width: 100%;
+      background: #0f1217;
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      outline: none;
+      font-size: 14px;
+    }
+    form textarea { resize: vertical; min-height: 60px; }
+
+    .row { display: flex; gap: 10px; align-items: center; }
+    .row > * { flex: 1; }
+
+    .hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+    .buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+    button {
+      background: var(--accent);
+      color: white;
+      border: 0;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+      box-shadow: 0 6px 16px rgba(124,110,246,0.35);
+    }
+    button:hover { transform: translateY(-1px); background: var(--accent-2); }
+    button.secondary {
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+    button:disabled { opacity: .5; cursor: default; transform: none; }
+
+    .preview-wrap { display: grid; gap: 14px; grid-template-rows: auto 1fr; }
+    .preview-actions { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+    .preview-area {
+      min-height: 200px;
+      display: grid;
+      place-items: center;
+      overflow: auto;
+      background: #0b0d12;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      aspect-ratio: 16/9;
+    }
+    .preview-area canvas {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+      box-shadow:
+        0 10px 30px rgba(0,0,0,.5),
+        0 0 0 1px rgba(255,255,255,.04) inset;
+      object-fit: contain;
+    }
+    .small { font-size: 12px; color: var(--muted); }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      color: var(--fg);
+      font-size: 12px;
+      border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AlphaDroid Banner Generator</h1>
+    <p>Demo page to overlay the text skeleton on a template and export as JPEG.</p>
+  </header>
+
+  <main>
+    <!-- Controls -->
+    <section class="card">
+      <form id="controls" novalidate>
+        <div class="group">
+          <label>Device name (you can add a line break)</label>
+          <textarea id="deviceName">Device Name
+Here</textarea>
+        </div>
+
+        <div class="group">
+          <label>Brand name</label>
+          <input type="text" id="brand" value="AlphaDroid" />
+        </div>
+
+        <div class="group row">
+          <div>
+            <label>Maintainer</label>
+            <input type="text" id="maintainer" value="Maintainer" />
+          </div>
+          <div>
+            <label>Manufacturer</label>
+            <input type="text" id="manufacturer" value="Manufacturer" />
+          </div>
+        </div>
+
+        <div class="group">
+          <label>Device codename</label>
+          <input type="text" id="codename" value="Device Codename" />
+        </div>
+
+
+        <div class="buttons">
+          <button id="btn-generate" type="button">Generate</button>
+          <button id="btn-download" type="button" class="secondary">Download JPEG</button>
+        </div>
+
+        <div class="hint">Tip: You can tweak fonts/colors by editing the generator options in the script below.</div>
+      </form>
+    </section>
+
+    <!-- Preview -->
+    <section class="card preview-wrap">
+      <div class="preview-actions">
+        <div>
+          <span class="badge">Preview</span>
+          <span id="meta" class="small" style="margin-left:8px;"></span>
+        </div>
+        <div class="small">The generator draws a frame and text overlay; it does not recreate your layout.</div>
+      </div>
+      <div id="preview" class="preview-area">
+        <div class="small">Click “Generate” to render your banner here.</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Banner generator library -->
+  <script src="../scripts/banner-generator.js"></script>
+  <script>
+    (function () {
+      const els = {
+        deviceName: document.getElementById('deviceName'),
+        brand: document.getElementById('brand'),
+        maintainer: document.getElementById('maintainer'),
+        manufacturer: document.getElementById('manufacturer'),
+        codename: document.getElementById('codename'),
+        btnGenerate: document.getElementById('btn-generate'),
+        btnDownload: document.getElementById('btn-download'),
+        preview: document.getElementById('preview'),
+        meta: document.getElementById('meta')
+      };
+
+      // Default sample template bundled in repo
+      const SAMPLE_TEMPLATE = '../images/skeleton.jpg';
+
+      let fileBlobUrl = null;
+      let lastResult = null;
+
+      function setBusy(on) {
+        els.btnGenerate.disabled = on;
+        els.btnDownload.disabled = on;
+      }
+
+      function revokeFileUrl() {
+        if (fileBlobUrl) {
+          URL.revokeObjectURL(fileBlobUrl);
+          fileBlobUrl = null;
+        }
+      }
+
+      function getFilenameBase() {
+        const raw = (els.deviceName.value || 'AlphaDroid').replace(/\s+/g, ' ').trim();
+        const compact = raw.replace(/\s+/g, '-').replace(/[^a-z0-9\-_.]/gi, '');
+        return `alphadroid-${compact || 'banner'}`;
+      }
+
+      function clearPreview() {
+        els.preview.innerHTML = '<div class="small">Rendering…</div>';
+      }
+
+      function showCanvas(canvas) {
+        els.preview.innerHTML = '';
+        els.preview.appendChild(canvas);
+        els.meta.textContent = `${canvas.width}x${canvas.height} (bitmap), CSS size: ${Math.round(canvas.getBoundingClientRect().width)}x${Math.round(canvas.getBoundingClientRect().height)} px`;
+      }
+
+      async function generate() {
+        setBusy(true);
+        try {
+          clearPreview();
+          const width = 1920;
+          const height = 1080;
+          const quality = 1.0;
+          const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+          const out = await BannerGenerator.generate({
+            template: SAMPLE_TEMPLATE,
+            width, height, quality, dpr,
+            deviceName: els.deviceName.value,
+            brand: els.brand.value,
+            maintainer: els.maintainer.value,
+            manufacturer: els.manufacturer.value,
+            codename: els.codename.value,
+            // Optional: tweak colors/fonts/frame here if you want a different look
+            // colors: { textPrimary: '#ECEAF2' },
+            // fonts: { family: "'Fredoka', Roboto, Arial, sans-serif" }
+          });
+
+          lastResult = out;
+          showCanvas(out.canvas);
+          return out;
+        } catch (e) {
+          console.error(e);
+          els.preview.innerHTML = '<div class="small" style="color:#ff9aa2">Failed to render banner. See console for details.</div>';
+          lastResult = null;
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      async function download() {
+        try {
+          if (!lastResult) {
+            await generate();
+            if (!lastResult) return;
+          }
+          const name = getFilenameBase() + '.jpg';
+          await BannerGenerator.download(lastResult.blob, name);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // Wire up actions
+      els.btnGenerate.addEventListener('click', generate);
+      els.btnDownload.addEventListener('click', download);
+
+      // Auto-preview on changes (debounced)
+      const debounce = (fn, wait = 400) => {
+        let t;
+        return (...args) => {
+          clearTimeout(t);
+          t = setTimeout(() => fn.apply(null, args), wait);
+        };
+      };
+      const auto = debounce(generate, 450);
+
+      [
+        els.deviceName, els.brand, els.maintainer,
+        els.manufacturer, els.codename
+      ].forEach(el => {
+        el.addEventListener('input', auto);
+      });
+
+      // Initial render - removed automatic generation
+      // generate();
+
+      // Cleanup
+      window.addEventListener('beforeunload', revokeFileUrl);
+    })();
+  </script>
+</body>
+</html>
