@@ -1,5 +1,5 @@
 /**
- * Banner Generator - overlays a text skeleton on top of a background template and exports a JPEG.
+ * Banner Generator - overlays a text skeleton on top of a background template and exports a PNG.
  *
  * This library does NOT recreate your layout; it draws a minimal "frame" panel and places text
  * like in your example. You provide the template (your designed image), and we overlay the text.
@@ -14,7 +14,7 @@
  *     release: '4.x update'
  *   });
  *   // Download file:
- *   await BannerGenerator.download(out.blob, 'alphadroid-banner.jpg');
+ *   await BannerGenerator.download(out.blob, 'alphadroid-banner.png');
  *
  * The function returns:
  *   { canvas, blob, dataURL }
@@ -40,11 +40,8 @@
     // Canvas and export
     width: DEFAULT_WIDTH,
     height: DEFAULT_HEIGHT,
-    quality: 1.0, // JPEG quality (0..1) - 100% quality
-    dpr: Math.max(
-      1,
-      (typeof window !== "undefined" && window.devicePixelRatio) || 1,
-    ),
+    quality: 1.0, // PNG export (lossless compression for perfect color preservation)
+    dpr: 1, // Force DPR to 1 to preserve original skeleton image format exactly
 
     // Content
     deviceName: "Device Name\nHere", // you can use \n to force break
@@ -60,15 +57,15 @@
       insetY: 28, // overall vertical margin
       widthRatio: 0.58, // width of the left frame as portion of canvas width
       radius: 28,
-      fill: "rgba(0,0,0,0.40)", // translucent dark overlay
+      fill: "rgba(0,0,0,0.0)", // translucent dark overlay
       blur: 0, // set to >0 for subtle blur (requires filter on ctx draw)
-      border: { color: "rgba(255,255,255,0.06)", width: 1 },
-      shadow: { x: 0, y: 10, blur: 30, color: "rgba(0,0,0,0.35)" },
+      border: { color: "rgba(255,255,255,0.0)", width: 1 },
+      shadow: { x: 0, y: 10, blur: 30, color: "rgba(0,0,0,0.0)" },
     },
 
     // Typography (choose families that exist in your page)
     fonts: {
-      // Families should be loaded via CSS. We’ll wait for them if document.fonts exists.
+      // Families should be loaded via CSS. We'll wait for them if document.fonts exists.
       family:
         "Fredoka, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       headerWeight: 800,
@@ -80,6 +77,8 @@
       deviceMaxSizeRatio: 0.17, // cap for largest device title size
       smallSizeRatio: 0.032, // ~24-26px
       brandSizeRatio: 0.046, // ~35px
+      // Letter spacing for device name text (as percentage of font size, e.g., 0.02 = 2%)
+      deviceLetterSpacing: -0.04,
     },
 
     // Colors
@@ -159,7 +158,7 @@
       }
       const img = new Image();
       // Only set crossOrigin for external URLs, not local files
-      if (srcOrImg.startsWith('http://') || srcOrImg.startsWith('https://')) {
+      if (srcOrImg.startsWith("http://") || srcOrImg.startsWith("https://")) {
         img.crossOrigin = "anonymous";
       }
       img.decoding = "async";
@@ -189,6 +188,80 @@
     } catch (_) {
       /* ignore */
     }
+  }
+
+  // Data helpers: fetch JSON and resolve device fields from local databases
+  async function loadJSON(url) {
+    const res = await fetch(url, { cache: "no-cache" });
+    if (!res.ok) throw new Error("Failed to load " + url);
+    return await res.json();
+  }
+
+  async function resolveDeviceFields(lookup, custom) {
+    const code = String(lookup?.codename || "").toLowerCase();
+    const devicesUrl = lookup?.devicesUrl || "data/devices.json";
+    const deviceDbUrl = lookup?.deviceDbUrl || "data/device_db.json";
+    const out = {
+      deviceName: null,
+      codename: code || null,
+      maintainer: null,
+      manufacturer: null,
+    };
+
+    let db = null,
+      devices = null;
+    try {
+      db = await loadJSON(deviceDbUrl);
+    } catch (_) {}
+    try {
+      devices = await loadJSON(devicesUrl);
+    } catch (_) {}
+
+    // Prefer device_db overrides (includes aliases)
+    if (db && db.overrides && code) {
+      let entry = db.overrides[code];
+      if (!entry) {
+        for (const k in db.overrides) {
+          const o = db.overrides[k];
+          const aliases = Array.isArray(o?.aliases)
+            ? o.aliases.map((a) => String(a).toLowerCase())
+            : [];
+          if (aliases.includes(code)) {
+            entry = o;
+            break;
+          }
+        }
+      }
+      if (entry) {
+        out.deviceName = entry.model ?? out.deviceName;
+        out.manufacturer = entry.oem ?? out.manufacturer;
+        out.maintainer = entry.maintainer ?? out.maintainer;
+        out.codename = entry.codename ?? out.codename;
+      }
+    }
+
+    // Fallback to data/devices.json
+    if (devices && Array.isArray(devices.devices) && code) {
+      const match = devices.devices.find(
+        (it) => String(it?.name || it?.filename || "").toLowerCase() === code,
+      );
+      const r = match?.data?.response;
+      if (r) {
+        out.deviceName = r.device ?? out.deviceName; // model name in feed
+        out.manufacturer = r.oem ?? out.manufacturer; // OEM/manufacturer
+        out.maintainer = r.maintainer ?? out.maintainer; // maintainer
+      }
+    }
+
+    // Custom field overrides from caller
+    if (custom && typeof custom === "object") {
+      if (custom.deviceName != null) out.deviceName = custom.deviceName;
+      if (custom.manufacturer != null) out.manufacturer = custom.manufacturer;
+      if (custom.maintainer != null) out.maintainer = custom.maintainer;
+      if (custom.codename != null) out.codename = custom.codename;
+    }
+
+    return out;
   }
 
   function drawRoundedRectPath(ctx, x, y, w, h, r) {
@@ -259,7 +332,74 @@
     ctx.restore();
   }
 
-  function breakLines(ctx, text, maxWidth, maxLines = 2) {
+  /**
+   * Draw text with custom letter spacing
+   * @param {CanvasRenderingContext2D} ctx - Canvas context
+   * @param {string} text - Text to draw
+   * @param {number} x - X position
+   * @param {number} y - Y position
+   * @param {number} letterSpacing - Letter spacing as percentage of font size (0-1)
+   * @param {number} fontSize - Font size in pixels
+   */
+  function fillTextWithSpacing(
+    ctx,
+    text,
+    x,
+    y,
+    letterSpacing = 0,
+    fontSize = 0,
+  ) {
+    if (!letterSpacing || letterSpacing === 0 || !fontSize) {
+      ctx.fillText(text, x, y);
+      return;
+    }
+
+    const chars = Array.from(text);
+    let currentX = x;
+    const spacingPx = fontSize * letterSpacing;
+
+    for (let i = 0; i < chars.length; i++) {
+      ctx.fillText(chars[i], currentX, y);
+      const charWidth = ctx.measureText(chars[i]).width;
+      currentX += charWidth + spacingPx;
+    }
+  }
+
+  /**
+   * Measure text width with custom letter spacing
+   * @param {CanvasRenderingContext2D} ctx - Canvas context
+   * @param {string} text - Text to measure
+   * @param {number} letterSpacing - Letter spacing as percentage of font size (0-1)
+   * @param {number} fontSize - Font size in pixels
+   * @returns {number} Total width including letter spacing
+   */
+  function measureTextWithSpacing(ctx, text, letterSpacing = 0, fontSize = 0) {
+    if (!letterSpacing || letterSpacing === 0 || !fontSize) {
+      return ctx.measureText(text).width;
+    }
+
+    const chars = Array.from(text);
+    let totalWidth = 0;
+    const spacingPx = fontSize * letterSpacing;
+
+    for (let i = 0; i < chars.length; i++) {
+      totalWidth += ctx.measureText(chars[i]).width;
+      if (i < chars.length - 1) {
+        totalWidth += spacingPx;
+      }
+    }
+
+    return totalWidth;
+  }
+
+  function breakLines(
+    ctx,
+    text,
+    maxWidth,
+    maxLines = 2,
+    letterSpacing = 0,
+    fontSize = 0,
+  ) {
     const words = String(text || "").split(/\s+/);
     const lines = [];
     let current = "";
@@ -272,16 +412,24 @@
     for (let i = 0; i < words.length; i++) {
       const word = words[i];
       const test = current ? current + " " + word : word;
-      if (ctx.measureText(test).width <= maxWidth) {
+      if (
+        measureTextWithSpacing(ctx, test, letterSpacing, fontSize) <= maxWidth
+      ) {
         current = test;
       } else {
         if (current) push(current);
         // If single word is too long, break hard
-        if (ctx.measureText(word).width > maxWidth) {
+        if (
+          measureTextWithSpacing(ctx, word, letterSpacing, fontSize) > maxWidth
+        ) {
           let w = "";
           for (const ch of word) {
             const test2 = w + ch;
-            if (ctx.measureText(test2).width > maxWidth && w) {
+            if (
+              measureTextWithSpacing(ctx, test2, letterSpacing, fontSize) >
+                maxWidth &&
+              w
+            ) {
               push(w);
               w = ch;
             } else {
@@ -304,11 +452,14 @@
     if (lines.length === maxLines) {
       const last = lines[maxLines - 1];
       const ell = "…";
-      if (ctx.measureText(last).width > maxWidth) {
+      if (
+        measureTextWithSpacing(ctx, last, letterSpacing, fontSize) > maxWidth
+      ) {
         let trimmed = last;
         while (
           trimmed.length > 1 &&
-          ctx.measureText(trimmed + ell).width > maxWidth
+          measureTextWithSpacing(ctx, trimmed + ell, letterSpacing, fontSize) >
+            maxWidth
         ) {
           trimmed = trimmed.slice(0, -1);
         }
@@ -389,6 +540,39 @@
   // Core generator
   async function generate(userOptions = {}) {
     const opts = mergeDeep(defaultOpts, userOptions || {});
+
+    // Auto-populate fields from local JSONs when a codename is provided,
+    // with optional custom field overrides.
+    if (
+      userOptions &&
+      (userOptions.codename ||
+        (userOptions.lookup && userOptions.lookup.codename))
+    ) {
+      try {
+        const fields = await resolveDeviceFields(
+          {
+            ...(userOptions.lookup || {}),
+            codename: userOptions.codename || userOptions.lookup.codename,
+          },
+          userOptions.customFields || null,
+        );
+        if (fields) {
+          opts.deviceName =
+            userOptions.deviceName ?? fields.deviceName ?? opts.deviceName;
+          opts.codename =
+            userOptions.codename ?? fields.codename ?? opts.codename;
+          opts.maintainer =
+            userOptions.maintainer ?? fields.maintainer ?? opts.maintainer;
+          opts.manufacturer =
+            userOptions.manufacturer ??
+            fields.manufacturer ??
+            opts.manufacturer;
+        }
+      } catch (_) {
+        /* ignore populate errors */
+      }
+    }
+
     if (!opts.template) {
       throw new Error('Please provide a "template" (URL or HTMLImageElement)');
     }
@@ -399,26 +583,35 @@
 
     // Draw template as full-bleed background
     ctx.save();
-    // Cover strategy: scale image to cover canvas while preserving aspect
+    // Disable image smoothing to preserve original image format exactly
+    ctx.imageSmoothingEnabled = false;
+
     const cw = opts.width,
       ch = opts.height;
-    const ir = img.width / img.height;
-    const cr = cw / ch;
-    let dw, dh, dx, dy;
-    if (ir > cr) {
-      // image is wider than canvas: height matches canvas, width overflows
-      dh = ch;
-      dw = dh * ir;
-      dx = (cw - dw) / 2;
-      dy = 0;
+
+    // If image dimensions match canvas exactly, draw at 1:1 to preserve original quality
+    if (img.width === cw && img.height === ch) {
+      ctx.drawImage(img, 0, 0);
     } else {
-      // image is taller or equal: width matches canvas, height overflows
-      dw = cw;
-      dh = dw / ir;
-      dx = 0;
-      dy = (ch - dh) / 2;
+      // Cover strategy: scale image to cover canvas while preserving aspect
+      const ir = img.width / img.height;
+      const cr = cw / ch;
+      let dw, dh, dx, dy;
+      if (ir > cr) {
+        // image is wider than canvas: height matches canvas, width overflows
+        dh = ch;
+        dw = dh * ir;
+        dx = (cw - dw) / 2;
+        dy = 0;
+      } else {
+        // image is taller or equal: width matches canvas, height overflows
+        dw = cw;
+        dh = dw / ir;
+        dx = 0;
+        dy = (ch - dh) / 2;
+      }
+      ctx.drawImage(img, dx, dy, dw, dh);
     }
-    ctx.drawImage(img, dx, dy, dw, dh);
     ctx.restore();
 
     // Compute frame rect
@@ -453,13 +646,12 @@
     const fontSmall = Math.max(14, Math.round(H * opts.fonts.smallSizeRatio));
     const fontBrand = Math.max(18, Math.round(H * opts.fonts.brandSizeRatio));
 
-    // Device name - fixed positioning and styling with proper line breaks
+    // Device name - fixed positioning and styling with wrapping within max width
+    const MAX_TEXT_WIDTH = 924;
     const deviceX = 131;
-    const deviceY = 214;
-    const deviceWidth = 924;
+    const deviceY = 205;
     const deviceFontSize = 128;
     const deviceLineHeight = 1.0; // 100%
-    const deviceLetterSpacing = -0.04; // -4%
     const deviceColor = "#E0DFEC";
 
     // Set up device name text styling
@@ -467,31 +659,28 @@
     ctx.fillStyle = deviceColor;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    
-    // Handle line breaks in device name
+
+    // Wrap device name to MAX_TEXT_WIDTH
     const deviceText = String(opts.deviceName || "");
-    const lines = deviceText.split('\n');
+    const deviceLetterSpacing = opts.fonts.deviceLetterSpacing || 0;
+    const deviceLines = breakLines(
+      ctx,
+      deviceText,
+      MAX_TEXT_WIDTH,
+      3,
+      deviceLetterSpacing,
+      deviceFontSize,
+    );
     let currentY = deviceY;
-    
-    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-      const line = lines[lineIndex];
-      const words = line.split(/\s+/);
-      let currentX = deviceX;
-      
-      for (let i = 0; i < words.length; i++) {
-        const word = words[i];
-        ctx.fillText(word, currentX, currentY);
-        const wordWidth = ctx.measureText(word).width;
-        currentX += wordWidth + (deviceFontSize * deviceLetterSpacing);
-        
-        // Add space between words (except for last word)
-        if (i < words.length - 1) {
-          const spaceWidth = ctx.measureText(' ').width;
-          currentX += spaceWidth + (deviceFontSize * deviceLetterSpacing);
-        }
-      }
-      
-      // Move to next line
+    for (let i = 0; i < deviceLines.length; i++) {
+      fillTextWithSpacing(
+        ctx,
+        deviceLines[i],
+        deviceX,
+        currentY,
+        deviceLetterSpacing,
+        deviceFontSize,
+      );
       currentY += deviceFontSize * deviceLineHeight;
     }
 
@@ -513,75 +702,102 @@
 
     // Maintainer text - fixed positioning and styling (removed "Maintained by" label)
     const maintainerX = 317.5;
-    const maintainerY = 782;
+    const maintainerY = 783;
     const maintainerFontSize = 27.6;
     const maintainerColor = opts.colors.textPrimary;
 
-    // Maintainer name only
+    // Maintainer name only (clamped to max width)
     ctx.font = `600 ${maintainerFontSize}px ${opts.fonts.family}`;
     ctx.fillStyle = maintainerColor;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(opts.maintainer || "", maintainerX, maintainerY);
+    {
+      const maintText = String(opts.maintainer || "");
+      const maintLines = breakLines(ctx, maintText, MAX_TEXT_WIDTH, 1);
+      ctx.fillText(maintLines[0] || "", maintainerX, maintainerY);
+    }
 
     // OEM Info pills - fixed positioning and styling
     const pillsX = 131;
     const pillsY = 837.4;
     const pillFontSize = 27.6;
     const pillPadX = 32.2;
-    const pillPadY = 13.8;
+    const pillPadTop = 16;
+    const pillPadBottom = 4;
     const manufacturerColor = "#55555E";
     const codenameColor = "#3C3960";
     const pillTextColor = "#FFFFFF";
-    const pillGap = 14; // gap between pills
+    const pillGap = 33; // gap between pills
 
     // Manufacturer pill
     const manufacturerText = String(opts.manufacturer || "");
     ctx.font = `600 ${pillFontSize}px ${opts.fonts.family}`;
     const manufacturerTextWidth = ctx.measureText(manufacturerText).width;
-    const manufacturerPillWidth = manufacturerTextWidth + (pillPadX * 2);
-    const manufacturerPillHeight = pillFontSize + (pillPadY * 2);
+    const manufacturerPillWidth = manufacturerTextWidth + pillPadX * 2;
+    const manufacturerPillHeight = pillFontSize + pillPadTop + pillPadBottom;
 
     // Draw manufacturer pill background
     ctx.fillStyle = manufacturerColor;
-    drawRoundedRectPath(ctx, pillsX, pillsY, manufacturerPillWidth, manufacturerPillHeight, Math.min(999, manufacturerPillHeight / 2));
+    drawRoundedRectPath(
+      ctx,
+      pillsX,
+      pillsY,
+      manufacturerPillWidth,
+      manufacturerPillHeight,
+      Math.min(999, manufacturerPillHeight / 2),
+    );
     ctx.fill();
 
     // Draw manufacturer pill text
     ctx.fillStyle = pillTextColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(manufacturerText, pillsX + manufacturerPillWidth / 2, pillsY + manufacturerPillHeight / 2);
+    ctx.fillText(
+      manufacturerText,
+      pillsX + manufacturerPillWidth / 2,
+      pillsY + manufacturerPillHeight / 2,
+    );
 
     // Codename pill
     const codenameText = String(opts.codename || "");
     ctx.font = `600 ${pillFontSize}px ${opts.fonts.family}`;
     const codenameTextWidth = ctx.measureText(codenameText).width;
-    const codenamePillWidth = codenameTextWidth + (pillPadX * 2);
-    const codenamePillHeight = pillFontSize + (pillPadY * 2);
+    const codenamePillWidth = codenameTextWidth + pillPadX * 2;
+    const codenamePillHeight = pillFontSize + pillPadTop + pillPadBottom;
     const codenamePillX = pillsX + manufacturerPillWidth + pillGap;
 
     // Draw codename pill background
     ctx.fillStyle = codenameColor;
-    drawRoundedRectPath(ctx, codenamePillX, pillsY, codenamePillWidth, codenamePillHeight, Math.min(999, codenamePillHeight / 2));
+    drawRoundedRectPath(
+      ctx,
+      codenamePillX,
+      pillsY,
+      codenamePillWidth,
+      codenamePillHeight,
+      Math.min(999, codenamePillHeight / 2),
+    );
     ctx.fill();
 
     // Draw codename pill text
     ctx.fillStyle = pillTextColor;
-    ctx.fillText(codenameText, codenamePillX + codenamePillWidth / 2, pillsY + codenamePillHeight / 2);
+    ctx.fillText(
+      codenameText,
+      codenamePillX + codenamePillWidth / 2,
+      pillsY + codenamePillHeight / 2,
+    );
 
     if (opts.debug) {
       // Guide for text area used by header + device name
       drawDebug(ctx, {
         x: textX,
         y: frameRect.y + pad.top,
-        w: maxDeviceWidth,
+        w: MAX_TEXT_WIDTH,
         h: cursorY - (frameRect.y + pad.top),
       });
     }
 
-    // Export
-    const dataURL = canvas.toDataURL("image/jpeg", opts.quality);
+    // Export as PNG to preserve original colors exactly (no lossy compression)
+    const dataURL = canvas.toDataURL("image/png");
     const blob = await dataURLtoBlob(dataURL);
 
     return { canvas, blob, dataURL };
@@ -593,7 +809,7 @@
     return await res.blob();
   }
 
-  async function download(blob, filename = "banner.jpg") {
+  async function download(blob, filename = "banner.png") {
     const url = URL.createObjectURL(blob);
     try {
       const a = document.createElement("a");
@@ -614,7 +830,7 @@
     download,
 
     // Convenience: one-shot helper
-    async generateAndDownload(options, filename = "banner.jpg") {
+    async generateAndDownload(options, filename = "banner.png") {
       const out = await generate(options);
       await download(out.blob, filename);
       return out;
