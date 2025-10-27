@@ -102,6 +102,19 @@
                 resize: vertical;
                 min-height: 60px;
             }
+            form input[type="checkbox"] {
+                width: auto;
+                margin-right: 8px;
+                cursor: pointer;
+                accent-color: var(--accent);
+            }
+            form label:has(input[type="checkbox"]) {
+                display: flex;
+                align-items: flex-start;
+                font-size: 13px;
+                cursor: pointer;
+                color: var(--fg);
+            }
 
             .row {
                 display: flex;
@@ -174,7 +187,9 @@
                 border: 1px dashed var(--border);
                 border-radius: 12px;
                 padding: 10px;
-                aspect-ratio: 16/9;
+                /* Use max-height to avoid overly large preview panels on tall screens */
+                max-height: 70vh;
+                min-height: 240px;
             }
             .preview-area canvas {
                 max-width: 100%;
@@ -217,45 +232,54 @@
             <section class="card">
                 <form id="controls" novalidate>
                     <div class="group">
-                        <label>Device name (you can add a line break)</label>
-                        <textarea id="deviceName">
+                        <label>Device</label>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <select id="deviceSelect">
+                                <option value="__select__">Select a device…</option>
+                                <option value="">Custom Device</option>
+                            </select>
+                            <span id="officialBadge" class="badge" style="display:none;white-space:nowrap"></span>
+                        </div>
+                        <div class="hint">
+                            Select from official devices or choose "Custom
+                            Device" to enter manually.
+                        </div>
+                    </div>
+
+                    <div class="group" id="customFields">
+                        <div class="group">
+                            <label
+                                >Device name</label
+                            >
+                            <textarea id="deviceName">
 Device Name
 Here</textarea
-                        >
-                    </div>
-
-                    <div class="group">
-                        <label>Brand name</label>
-                        <input type="text" id="brand" value="AlphaDroid" />
-                    </div>
-
-                    <div class="group row">
-                        <div>
-                            <label>Maintainer</label>
-                            <input
-                                type="text"
-                                id="maintainer"
-                                value="Maintainer"
-                            />
+                            >
                         </div>
-                        <div>
-                            <label>Manufacturer</label>
-                            <input
-                                type="text"
-                                id="manufacturer"
-                                value="Manufacturer"
-                            />
-                        </div>
-                    </div>
 
-                    <div class="group">
-                        <label>Device</label>
-                        <select id="deviceSelect">
-                            <option value="">Select a device…</option>
-                        </select>
-                        <div class="hint">
-                            List sourced from device_db.json (priority) and
-                            devices.json. Label format: (codename) | (model).
+
+                            <div class="group">
+                                <label>Codename</label>
+                                <input type="text" id="codename" value="" />
+                            </div>
+
+                        <div class="group row">
+                            <div>
+                                <label>Maintainer</label>
+                                <input
+                                    type="text"
+                                    id="maintainer"
+                                    value="Maintainer"
+                                />
+                            </div>
+                            <div>
+                                <label>Manufacturer</label>
+                                <input
+                                    type="text"
+                                    id="manufacturer"
+                                    value="Manufacturer"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -272,10 +296,6 @@ Here</textarea
                         </button>
                     </div>
 
-                    <div class="hint">
-                        Tip: You can tweak fonts/colors by editing the generator
-                        options in the script below.
-                    </div>
                 </form>
             </section>
 
@@ -309,10 +329,12 @@ Here</textarea
             (function () {
                 const els = {
                     deviceName: document.getElementById("deviceName"),
-                    brand: document.getElementById("brand"),
+                        codename: document.getElementById("codename"),
                     maintainer: document.getElementById("maintainer"),
                     manufacturer: document.getElementById("manufacturer"),
                     deviceSelect: document.getElementById("deviceSelect"),
+                    officialBadge: document.getElementById("officialBadge"),
+                    customFields: document.getElementById("customFields"),
                     btnGenerate: document.getElementById("btn-generate"),
                     btnDownload: document.getElementById("btn-download"),
                     preview: document.getElementById("preview"),
@@ -322,13 +344,37 @@ Here</textarea
                 // Default sample template bundled in repo
                 const SAMPLE_TEMPLATE = "../images/skeleton.png";
 
+                // Cache for device list and JSON data
+                const cache = {
+                    deviceList: null,
+                    json: new Map(),
+                };
+
+                let currentGenerateController = null;
+                let fileBlobUrl = null;
+                let lastResult = null;
+
                 // Helpers to source list from device_db.json (priority) and devices.json
                 async function loadJSON(url) {
-                    const res = await fetch(url, { cache: "no-cache" });
+                    // Check cache first
+                    if (cache.json.has(url)) {
+                        return cache.json.get(url);
+                    }
+
+                    const res = await fetch(url, { cache: "force-cache" });
                     if (!res.ok) throw new Error("Failed to load " + url);
-                    return await res.json();
+                    const data = await res.json();
+
+                    // Store in cache
+                    cache.json.set(url, data);
+                    return data;
                 }
                 async function buildDeviceList() {
+                    // Return cached list if available
+                    if (cache.deviceList) {
+                        return cache.deviceList;
+                    }
+
                     let db = null,
                         devices = null;
                     try {
@@ -341,22 +387,21 @@ Here</textarea
 
                     // device_db.json overrides first (priority), skip hidden
                     if (db && db.overrides) {
-                        for (const [code, entry] of Object.entries(
-                            db.overrides,
-                        )) {
+                        const entries = Object.entries(db.overrides);
+                        for (let i = 0; i < entries.length; i++) {
+                            const [code, entry] = entries[i];
                             if (!entry || entry.hide) continue;
                             const codename = String(
                                 entry.codename || code || "",
                             ).toLowerCase();
-                            const model = entry.model || "";
-                            const oem = entry.oem || "";
-                            const maintainer = entry.maintainer || "";
                             if (!codename) continue;
+
                             map.set(codename, {
                                 codename,
-                                model,
-                                oem,
-                                maintainer,
+                                model: entry.model || "",
+                                oem: entry.oem || "",
+                                maintainer: entry.maintainer || "",
+                                isOfficial: true, // from device_db.json
                             });
 
                             // Aliases are intentionally not added to the dropdown to avoid duplicates.
@@ -365,7 +410,9 @@ Here</textarea
 
                     // devices.json entries (fallback if not already present)
                     if (devices && Array.isArray(devices.devices)) {
-                        for (const it of devices.devices) {
+                        const devicesArray = devices.devices;
+                        for (let i = 0; i < devicesArray.length; i++) {
+                            const it = devicesArray[i];
                             let code = String(
                                 it?.name || it?.filename || "",
                             ).toLowerCase();
@@ -373,26 +420,28 @@ Here</textarea
                             if (code.endsWith(".json")) {
                                 code = code.slice(0, -5);
                             }
-                            const r = it?.data?.response;
-                            const model = r?.device || "";
-                            const oem = r?.oem || "";
-                            const maintainer = r?.maintainer || "";
                             if (!code) continue;
                             // Only add if not already in device_db
                             if (!map.has(code)) {
+                                const r = it?.data?.response;
                                 map.set(code, {
                                     codename: code,
-                                    model,
-                                    oem,
-                                    maintainer,
+                                    model: r?.device || "",
+                                    oem: r?.oem || "",
+                                    maintainer: r?.maintainer || "",
+                                    isOfficial: true, // found in devices.json
                                 });
                             }
                         }
                     }
 
-                    return Array.from(map.values()).sort((a, b) =>
+                    const list = Array.from(map.values()).sort((a, b) =>
                         a.codename.localeCompare(b.codename),
                     );
+
+                    // Cache the result
+                    cache.deviceList = list;
+                    return list;
                 }
                 async function populateDeviceDropdown() {
                     if (!els.deviceSelect) return;
@@ -403,19 +452,24 @@ Here</textarea
                         const list = await buildDeviceList();
                         const frag = document.createDocumentFragment();
                         const defaultOpt = document.createElement("option");
-                        defaultOpt.value = "";
+                        // Use a non-empty placeholder value so we can reserve the empty value for "Custom Device"
+                        defaultOpt.value = "__select__";
                         defaultOpt.textContent = "Select a device…";
                         frag.appendChild(defaultOpt);
+                        const customOpt = document.createElement("option");
+                        // Keep empty string as the value for Custom Device (user requested)
+                        customOpt.value = "";
+                        customOpt.textContent = "Custom Device";
+                        frag.appendChild(customOpt);
 
-                        for (const item of list) {
+                        // Batch create all options at once and set data-official when known
+                        const listLength = list.length;
+                        for (let i = 0; i < listLength; i++) {
+                            const item = list[i];
                             const opt = document.createElement("option");
-
                             opt.value = item.codename;
-
-                            const modelLabel = item.model || "Unknown model";
-
-                            opt.textContent = `(${item.codename}) | ${modelLabel}`;
-
+                            opt.textContent = `(${item.codename}) | ${item.model || "Unknown model"}`;
+                            if (item.isOfficial) opt.dataset.official = "1";
                             frag.appendChild(opt);
                         }
 
@@ -429,17 +483,24 @@ Here</textarea
                         els.deviceSelect.disabled = false;
                     }
                 }
+
+                function showOfficialBadge(isOfficial) {
+                    if (!els.officialBadge) return;
+                    if (isOfficial) {
+                        els.officialBadge.style.display = "inline-block";
+                        els.officialBadge.textContent = "Official build";
+                    } else {
+                        els.officialBadge.style.display = "none";
+                        els.officialBadge.textContent = "";
+                    }
+                }
                 function applySelectionToFields(selected) {
                     if (!selected) return;
-                    // Reflect selection into text fields so user can see/adjust
-                    if (selected.model) els.deviceName.value = selected.model;
-                    if (selected.oem) els.manufacturer.value = selected.oem;
-                    if (selected.maintainer)
-                        els.maintainer.value = selected.maintainer;
+                    // Always update fields, even if empty string
+                    els.deviceName.value = selected.model || "";
+                    els.manufacturer.value = selected.oem || "";
+                    els.maintainer.value = selected.maintainer || "";
                 }
-
-                let fileBlobUrl = null;
-                let lastResult = null;
 
                 function setBusy(on) {
                     els.btnGenerate.disabled = on;
@@ -470,61 +531,123 @@ Here</textarea
 
                 function showCanvas(canvas) {
                     els.preview.innerHTML = "";
+                    // Ensure the canvas fills the preview container vertically while maintaining 16:9
+                    // We'll use CSS sizing (not redraw) so the bitmap stays high-res.
+                    canvas.style.width = "auto";
+                    canvas.style.height = "100%"; // fill container height
+                    canvas.style.maxWidth = "100%"; // but never overflow horizontally
+                    canvas.style.display = "block";
+
                     els.preview.appendChild(canvas);
                     els.meta.textContent = `${canvas.width}x${canvas.height} (bitmap), CSS size: ${Math.round(canvas.getBoundingClientRect().width)}x${Math.round(canvas.getBoundingClientRect().height)} px`;
+
+                    // Observe container resize to reapply sizing rules if needed
+                    try {
+                        if (window.ResizeObserver) {
+                            if (els._resizeObserver) els._resizeObserver.disconnect();
+                            els._resizeObserver = new ResizeObserver(() => {
+                                // Ensure canvas height fills preview; width stays auto
+                                canvas.style.height = "100%";
+                                canvas.style.width = "auto";
+                                canvas.style.maxWidth = "100%";
+                                els.meta.textContent = `${canvas.width}x${canvas.height} (bitmap), CSS size: ${Math.round(canvas.getBoundingClientRect().width)}x${Math.round(canvas.getBoundingClientRect().height)} px`;
+                            });
+                            els._resizeObserver.observe(els.preview);
+                        }
+                    } catch (_) {}
+                }
+
+                function toggleCustomFields() {
+                    const selectedValue = els.deviceSelect?.value?.trim() || "";
+                    const isCustom = selectedValue === "";
+
+                    if (els.customFields) {
+                        els.customFields.style.display = isCustom
+                            ? "block"
+                            : "none";
+                    }
                 }
 
                 async function generate() {
+                    // Cancel any ongoing generation
+                    if (currentGenerateController) {
+                        currentGenerateController.abort();
+                    }
+                    currentGenerateController = new AbortController();
+                    const thisController = currentGenerateController;
+
                     setBusy(true);
                     try {
                         clearPreview();
                         const width = 1920;
                         const height = 1080;
                         const quality = 1.0;
-                        const dpr = Math.max(1, window.devicePixelRatio || 1);
+                        const dpr = 1; // Keep at 1 for consistency
 
-                        const base = {
+                        const selectedCode =
+                            els.deviceSelect?.value?.trim() || "";
+
+                        const options = {
                             template: SAMPLE_TEMPLATE,
                             width,
                             height,
                             quality,
                             dpr,
                         };
-                        let options = { ...base };
-                        const selectedCode =
-                            els.deviceSelect && els.deviceSelect.value
-                                ? els.deviceSelect.value.trim()
-                                : "";
-                        if (selectedCode) {
+
+                        // Always pass current field values, even for official devices
+                        options.deviceName = els.deviceName.value;
+                        options.maintainer = els.maintainer.value;
+                        options.manufacturer = els.manufacturer.value;
+
+                            // Custom devices are unofficial
+                            options.isOfficial = false;
+
+                            // Custom device: use entered codename
+                            options.codename = els.codename.value;
+
+                        if (selectedCode && selectedCode !== "") {
+                            // Official device from dropdown
                             options.codename = selectedCode;
-                            options.brand = els.brand.value;
                             options.lookup = {
                                 devicesUrl: "../data/devices.json",
                                 deviceDbUrl: "../data/device_db.json",
                             };
+                            // If the option element carries data-official, prefer it as a quick hint
+                            try {
+                                const opt = els.deviceSelect.selectedOptions[0];
+                                if (opt && opt.dataset && opt.dataset.official === "1") {
+                                    options.isOfficial = true;
+                                }
+                            } catch (_) {}
                         } else {
-                            // Manual mode
-                            options.deviceName = els.deviceName.value;
-                            options.brand = els.brand.value;
-                            options.maintainer = els.maintainer.value;
-                            options.manufacturer = els.manufacturer.value;
+                            // Custom devices are unofficial
+                            options.isOfficial = false;
                         }
-                        // Optional: tweak colors/fonts/frame here if you want a different look
-
-                        // options.colors = { textPrimary: '#ECEAF2' };
-                        // options.fonts = { family: "'Fredoka', Roboto, Arial, sans-serif" };
 
                         const out = await BannerGenerator.generate(options);
+
+                        // Check if this request was cancelled
+                        if (thisController.signal.aborted) {
+                            return;
+                        }
 
                         lastResult = out;
                         showCanvas(out.canvas);
                         return out;
                     } catch (e) {
+                        // Ignore abort errors
+                        if (e.name === "AbortError") {
+                            return;
+                        }
                         console.error(e);
                         els.preview.innerHTML =
                             '<div class="small" style="color:#ff9aa2">Failed to render banner. See console for details.</div>';
                         lastResult = null;
                     } finally {
+                        if (currentGenerateController === thisController) {
+                            currentGenerateController = null;
+                        }
                         setBusy(false);
                     }
                 }
@@ -547,41 +670,82 @@ Here</textarea
                 els.btnDownload.addEventListener("click", download);
 
                 // Populate dropdown, and reflect selection into fields
-                populateDeviceDropdown();
-                if (els.deviceSelect) {
-                    els.deviceSelect.addEventListener("change", async () => {
-                        const code = els.deviceSelect.value;
-                        if (!code) return;
-                        // Build a small index to find selected quickly (avoid refetch by using last list if needed)
-                        try {
-                            const list = await (async () =>
-                                await buildDeviceList())();
-                            const info = list.find((d) => d.codename === code);
-                            if (info) applySelectionToFields(info);
-                        } catch (_) {}
-                    });
-                }
+                (async () => {
+                    await populateDeviceDropdown();
+
+                    // After population, default to custom (empty value) when selection is empty or still the placeholder
+                    if (!els.deviceSelect.value || els.deviceSelect.value === "__select__") {
+                        els.deviceSelect.value = ""; // empty string = Custom Device
+                    }
+
+                    // Initialize badge + fields according to current selection
+                    const initialOpt = els.deviceSelect.selectedOptions[0];
+                    const initialOfficial = initialOpt && initialOpt.dataset.official === "1";
+                    showOfficialBadge(initialOfficial);
+                    toggleCustomFields();
+
+                    if (els.deviceSelect) {
+                        els.deviceSelect.addEventListener("change", async () => {
+                            const code = els.deviceSelect.value;
+
+                            let info = null;
+                            if (code) {
+                                try {
+                                    const list = await buildDeviceList();
+                                    info = list.find((d) => d.codename === code) || null;
+                                } catch (_) {
+                                    info = null;
+                                }
+                            }
+
+                            if (code && info) {
+                                // Official device: fill fields
+                                applySelectionToFields(info);
+                            } else if (!code) {
+                                // Custom device: clear fields (but keep present in DOM)
+                                els.deviceName.value = "";
+                                els.maintainer.value = "";
+                                els.manufacturer.value = "";
+                            }
+
+                            // Toggle visibility of custom fields AFTER applying values
+                            toggleCustomFields();
+
+                            // Update official badge based on selected option attribute
+                            const opt = els.deviceSelect.selectedOptions[0];
+                            const isOfficial = opt && (opt.dataset.official === "1");
+                            showOfficialBadge(isOfficial);
+
+                            // Always trigger regeneration after fields are updated
+                            auto();
+                        });
+                    }
+                })();
+
+                // Initialize field visibility
+                toggleCustomFields();
 
                 // Auto-preview on changes (debounced)
                 const debounce = (fn, wait = 400) => {
                     let t;
                     return (...args) => {
                         clearTimeout(t);
-                        t = setTimeout(() => fn.apply(null, args), wait);
+                        t = setTimeout(() => fn(...args), wait);
                     };
                 };
                 const auto = debounce(generate, 450);
 
-                [
+                const autoUpdateFields = [
                     els.deviceName,
                     els.brand,
                     els.maintainer,
                     els.manufacturer,
-                ].forEach((el) => {
-                    el.addEventListener("input", auto);
-                });
-                if (els.deviceSelect) {
-                    els.deviceSelect.addEventListener("change", auto);
+                ];
+
+                for (let i = 0; i < autoUpdateFields.length; i++) {
+                    autoUpdateFields[i].addEventListener("input", auto, {
+                        passive: true,
+                    });
                 }
 
                 // Initial render - removed automatic generation

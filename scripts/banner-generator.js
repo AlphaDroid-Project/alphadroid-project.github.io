@@ -49,6 +49,7 @@
     manufacturer: "Manufacturer",
     codename: "Device Codename",
     brand: "AlphaDroid",
+    isOfficial: false, // Whether device is official (found in JSON data)
 
     // Frame (left panel) styling (over the template)
     frame: {
@@ -201,11 +202,19 @@
     const code = String(lookup?.codename || "").toLowerCase();
     const devicesUrl = lookup?.devicesUrl || "data/devices.json";
     const deviceDbUrl = lookup?.deviceDbUrl || "data/device_db.json";
+
+    // Create cache key including custom fields
+    const cacheKey = JSON.stringify({ code, devicesUrl, deviceDbUrl, custom });
+    if (cache.deviceFields.has(cacheKey)) {
+      return cache.deviceFields.get(cacheKey);
+    }
+
     const out = {
       deviceName: null,
       codename: code || null,
       maintainer: null,
       manufacturer: null,
+      isOfficial: false, // Track if device is found in JSON data
     };
 
     let db = null,
@@ -237,6 +246,7 @@
         out.manufacturer = entry.oem ?? out.manufacturer;
         out.maintainer = entry.maintainer ?? out.maintainer;
         out.codename = entry.codename ?? out.codename;
+        out.isOfficial = true; // Found in device_db.json
       }
     }
 
@@ -250,6 +260,7 @@
         out.deviceName = r.device ?? out.deviceName; // model name in feed
         out.manufacturer = r.oem ?? out.manufacturer; // OEM/manufacturer
         out.maintainer = r.maintainer ?? out.maintainer; // maintainer
+        if (!out.isOfficial) out.isOfficial = true; // Found in devices.json
       }
     }
 
@@ -259,8 +270,11 @@
       if (custom.manufacturer != null) out.manufacturer = custom.manufacturer;
       if (custom.maintainer != null) out.maintainer = custom.maintainer;
       if (custom.codename != null) out.codename = custom.codename;
+      if (custom.isOfficial != null) out.isOfficial = custom.isOfficial;
     }
 
+    // Cache the result
+    cache.deviceFields.set(cacheKey, out);
     return out;
   }
 
@@ -557,16 +571,51 @@
           userOptions.customFields || null,
         );
         if (fields) {
-          opts.deviceName =
-            userOptions.deviceName ?? fields.deviceName ?? opts.deviceName;
-          opts.codename =
-            userOptions.codename ?? fields.codename ?? opts.codename;
-          opts.maintainer =
-            userOptions.maintainer ?? fields.maintainer ?? opts.maintainer;
-          opts.manufacturer =
-            userOptions.manufacturer ??
-            fields.manufacturer ??
-            opts.manufacturer;
+          // For fields populated from database, prioritize: user explicit > detected from DB > defaults
+          // Use strict undefined checks to ensure DB values take priority over defaults
+          if (userOptions.deviceName !== undefined) {
+            opts.deviceName = userOptions.deviceName;
+          } else if (
+            fields.deviceName !== undefined &&
+            fields.deviceName !== null
+          ) {
+            opts.deviceName = fields.deviceName;
+          }
+
+          if (userOptions.codename !== undefined) {
+            opts.codename = userOptions.codename;
+          } else if (
+            fields.codename !== undefined &&
+            fields.codename !== null
+          ) {
+            opts.codename = fields.codename;
+          }
+
+          if (userOptions.maintainer !== undefined) {
+            opts.maintainer = userOptions.maintainer;
+          } else if (
+            fields.maintainer !== undefined &&
+            fields.maintainer !== null
+          ) {
+            opts.maintainer = fields.maintainer;
+          }
+
+          if (userOptions.manufacturer !== undefined) {
+            opts.manufacturer = userOptions.manufacturer;
+          } else if (
+            fields.manufacturer !== undefined &&
+            fields.manufacturer !== null
+          ) {
+            opts.manufacturer = fields.manufacturer;
+          }
+
+          // For isOfficial, prioritize: explicit user value > detected from fields > false
+          if (userOptions.isOfficial !== undefined) {
+            opts.isOfficial = userOptions.isOfficial;
+          } else if (fields.isOfficial !== undefined) {
+            opts.isOfficial = fields.isOfficial;
+          }
+          // else keep the merged value from opts (default: false)
         }
       } catch (_) {
         /* ignore populate errors */
@@ -786,6 +835,35 @@
       pillsY + codenamePillHeight / 2,
     );
 
+    // Official/Unofficial pill
+    const statusText = opts.isOfficial ? "Official" : "Unofficial";
+    const statusColor = opts.isOfficial ? "#2D6B3F" : "#6B2D2D"; // Green for official, red for unofficial
+    ctx.font = `600 ${pillFontSize}px ${opts.fonts.family}`;
+    const statusTextWidth = ctx.measureText(statusText).width;
+    const statusPillWidth = statusTextWidth + pillPadX * 2;
+    const statusPillHeight = pillFontSize + pillPadTop + pillPadBottom;
+    const statusPillX = codenamePillX + codenamePillWidth + pillGap;
+
+    // Draw status pill background
+    ctx.fillStyle = statusColor;
+    drawRoundedRectPath(
+      ctx,
+      statusPillX,
+      pillsY,
+      statusPillWidth,
+      statusPillHeight,
+      Math.min(999, statusPillHeight / 2),
+    );
+    ctx.fill();
+
+    // Draw status pill text
+    ctx.fillStyle = pillTextColor;
+    ctx.fillText(
+      statusText,
+      statusPillX + statusPillWidth / 2,
+      pillsY + statusPillHeight / 2,
+    );
+
     if (opts.debug) {
       // Guide for text area used by header + device name
       drawDebug(ctx, {
@@ -828,6 +906,16 @@
     // Main API
     generate,
     download,
+
+    // Helper: check whether a codename exists in local JSON sources
+    async isOfficialCodename(codename, devicesUrl = "data/devices.json", deviceDbUrl = "data/device_db.json") {
+      try {
+        const fields = await resolveDeviceFields({ codename, devicesUrl, deviceDbUrl }, null);
+        return !!(fields && fields.isOfficial);
+      } catch (_) {
+        return false;
+      }
+    },
 
     // Convenience: one-shot helper
     async generateAndDownload(options, filename = "banner.png") {
