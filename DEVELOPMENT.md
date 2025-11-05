@@ -421,7 +421,7 @@ When reporting issues, please include:
 ## Contributors
 
 - **Website Maintainer**: [Naoko Shoto](https://github.com/naokoshoto)
-- **Web Contributor/Initiator**: [Pacuka](https://t.me/Pacuka)
+- **Web Contributor/Initiator**: [Pacuka]([https://t.me/Pacuka](https://github.com/Pacuka))
 
 ## Support
 
