@@ -239,6 +239,20 @@ jobs:
                   const existing = fs.readFileSync(outputPath, 'utf8');
                   const existingJson = JSON.parse(existing);
 
+                  // Check if the file is stale (older than 24 hours)
+                  // We want to force an update at least once a day to keep the timestamp fresh
+                  // for health checks, even if the device data itself hasn't changed.
+                  let isStale = false;
+                  if (existingJson.metadata && existingJson.metadata.fetchedAt) {
+                    const lastFetch = new Date(existingJson.metadata.fetchedAt);
+                    const ageMs = Date.now() - lastFetch.getTime();
+                    const ageHours = ageMs / (1000 * 60 * 60);
+                    if (ageHours > 24) {
+                      console.log(`Existing data is ${ageHours.toFixed(1)} hours old (older than 24h). Forcing update.`);
+                      isStale = true;
+                    }
+                  }
+
                   const normalize = (devices) => (
                     devices
                       .map(d => ({ name: d.name, data: d.data }))
@@ -248,8 +262,8 @@ jobs:
                   const existingNormalized = normalize(existingJson.devices || []);
                   const outputNormalized = normalize(outputData.devices || []);
 
-                  if (JSON.stringify(existingNormalized) === JSON.stringify(outputNormalized)) {
-                    console.log('No device-level changes detected after normalizing; skipping write.');
+                  if (!isStale && JSON.stringify(existingNormalized) === JSON.stringify(outputNormalized)) {
+                    console.log('No device-level changes detected and data is fresh (< 24h); skipping write.');
                     shouldWrite = false;
                   }
                 }
