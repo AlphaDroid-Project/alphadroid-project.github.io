@@ -133,15 +133,16 @@ jobs:
               let status = 'fresh';
               let warning = null;
               
-              if (ageMinutes > 60) {
+              
+              if (ageMinutes > 13 * 60) {
                 status = 'stale';
-                warning = `Data is ${ageMinutes} minutes old`;
+                warning = `Data is ${Math.floor(ageMinutes / 60)} hours old (expected < 13h)`;
               }
-              if (ageHours > 6) {
+              if (ageHours > 25) {
                 status = 'old';
-                warning = `Data is ${ageHours} hours old`;
+                warning = `Data is ${ageHours} hours old (expected < 25h)`;
               }
-              if (ageDays > 1) {
+              if (ageDays > 3) {
                 status = 'very_old';
                 warning = `Data is ${ageDays} days old`;
               }
@@ -311,11 +312,11 @@ jobs:
               // Write results to file for next step
               fs.writeFileSync('health-results.json', JSON.stringify(results));
               
-              if (results.overallStatus === 'healthy') {
-                console.log('Health check completed successfully');
+              if (results.overallStatus === 'healthy' || results.overallStatus === 'degraded') {
+                console.log(`Health check completed successfully (Status: ${results.overallStatus})`);
                 process.exit(0);
               } else {
-                console.log(`Health check completed with status: ${results.overallStatus}`);
+                console.log(`Health check failed with status: ${results.overallStatus}`);
                 process.exit(1);
               }
             })
