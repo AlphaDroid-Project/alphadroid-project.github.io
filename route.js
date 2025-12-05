@@ -1,34 +1,68 @@
-let CACHE_MAX_SIZE = 10;
-let CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+// Cache settings removed
 
-// Initialize cache settings from configuration
-function initializeCacheSettings() {
+// Global route state
+let routes = {};
+let sectionHashes = new Set();
+// Regex to check for device routes (e.g. #devices, #devices?codename=popara)
+const DEVICE_ROUTE_REGEX = /^#devices(\?.*)?$/;
+
+/**
+ * Check if the hash corresponds to a device route
+ */
+function isDeviceRoute(hash) {
+    return DEVICE_ROUTE_REGEX.test(hash);
+}
+
+/**
+ * Extract device codename from hash
+ */
+function getDeviceCodename(hash) {
+    if (!hash) return null;
+    const parts = hash.split('?');
+    if (parts.length < 2) return null;
+    const params = new URLSearchParams(parts[1]);
+    return params.get('codename');
+}
+
+/**
+ * Initialize routes from configuration
+ */
+function initializeRoutes() {
     if (window.configManager && window.configManager.isLoaded()) {
-        const uiConfig = window.configManager.getUi();
-        CACHE_MAX_SIZE = uiConfig.cache?.maxSize || 10;
-        CACHE_TTL = uiConfig.cache?.ttl || 5 * 60 * 1000;
+        const nav = window.configManager.getNavigation();
+        routes = nav.routes || {};
+    } else {
+        // Fallback or default routes
+        routes = {
+            "#": "pages/home.html",
+            "#home": "pages/home.html",
+            "#features": "pages/home.html",
+            "#screenshots": "pages/home.html",
+            "#download": "pages/home.html",
+            "#devices": "pages/devices.html"
+        };
+    }
+
+    // Identify section hashes (those that map to home.html but are not home itself)
+    sectionHashes.clear();
+    Object.entries(routes).forEach(([hash, path]) => {
+        if (path === 'pages/home.html' && hash !== '#' && hash !== '#home') {
+            sectionHashes.add(hash);
+        }
+    });
+
+    // Ensure #devices is always a handled route
+    if (!routes['#devices']) {
+        routes['#devices'] = 'pages/devices.html';
     }
 }
 
-async function fetchContent(url) {
-    // Serve from cache if available and not expired
-    if (window.__pageCache.has(url)) {
-        const timestamp = window.__cacheTimestamps.get(url);
-        if (timestamp && Date.now() - timestamp < CACHE_TTL) {
-            const cached = window.__pageCache.get(url);
-            return { ok: true, text: async () => cached };
-        } else {
-            // Remove expired cache entry
-            window.__pageCache.delete(url);
-            window.__cacheTimestamps.delete(url);
-        }
-    }
 
-    // Use preloaded page fragment if available
+async function fetchContent(url) {
+    // Use preloaded page fragment if available (ephemeral memory only)
     try {
         if (window.__preloadedPages && window.__preloadedPages[url]) {
             const html = window.__preloadedPages[url];
-            window.__pageCache.set(url, html);
             return { ok: true, text: async () => html };
         }
     } catch (e) {
@@ -37,7 +71,7 @@ async function fetchContent(url) {
 
     // Handle both development and production environments
     if (window.location.protocol === 'file:') {
-        // Development mode - return mock content (do not cache)
+        // Development mode - return mock content
         return {
             ok: true,
             text: async () => `<div class="container">
@@ -48,23 +82,9 @@ async function fetchContent(url) {
         };
     }
 
-    // Network fetch with no-cache header; cache successful response body
-    const res = await fetch(url, { cache: 'no-cache' });
-    if (res.ok) {
-        const html = await res.text();
-
-        // Implement cache size management
-        if (window.__pageCache.size >= CACHE_MAX_SIZE) {
-            const firstKey = window.__pageCache.keys().next().value;
-            window.__pageCache.delete(firstKey);
-            window.__cacheTimestamps.delete(firstKey);
-        }
-
-        window.__pageCache.set(url, html);
-        window.__cacheTimestamps.set(url, Date.now());
-        return { ok: true, text: async () => html };
-    }
-    return res;
+    // Network fetch with no-cache header
+    // Do NOT cache the result in __pageCache
+    return await fetch(url, { cache: 'no-cache' });
 }
 
 function navigateTo(path) {
@@ -161,7 +181,7 @@ function initializeRouteActions() {
 // Initialize route actions when config is ready
 window.addEventListener('configReady', () => {
     initializeRoutes();
-    initializeCacheSettings();
+    // initializeCacheSettings - REMOVED
     initializeRouteActions();
 });
 

@@ -15,24 +15,25 @@
             window.__preloadedPages['/download'] = txt;
           }
         })
-        .catch(() => {}),
-      
+        .catch(() => { }),
+
       fetch('data/devices.json', { cache: 'no-cache' })
         .then(resp => resp.ok ? resp.json() : null)
         .then(data => {
           if (data) window.__preloadedData = data;
         })
-        .catch(() => {})
+        .catch(() => { })
     ];
 
     await Promise.allSettled(preloadPromises);
 
     // Cache API population (non-blocking)
-    if ('caches' in window) {
-      caches.open('preload-v1')
-        .then(cache => cache.addAll(['pages/devices.html', 'data/devices.json']))
-        .catch(() => {});
-    }
+    // Cache API disabled
+    // if ('caches' in window) {
+    //   caches.open('preload-v1')
+    //     .then(cache => cache.addAll(['pages/devices.html', 'data/devices.json']))
+    //     .catch(() => {});
+    // }
   } catch (e) {
     console.error('preload bootstrap failed', e);
   }
