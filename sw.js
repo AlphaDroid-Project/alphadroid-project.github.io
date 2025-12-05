@@ -1,7 +1,7 @@
 // Service Worker for AlphaDroid Project Website
-const CACHE_NAME = 'alphadroid-v1.0.0';
-const STATIC_CACHE = 'alphadroid-static-v1.0.0';
-const DYNAMIC_CACHE = 'alphadroid-dynamic-v1.0.0';
+const CACHE_NAME = 'alphadroid-v1.0.1';
+const STATIC_CACHE = 'alphadroid-static-v1.0.1';
+const DYNAMIC_CACHE = 'alphadroid-dynamic-v1.0.1';
 
 // Static assets to cache immediately
 const STATIC_ASSETS = [
@@ -43,8 +43,8 @@ self.addEventListener('activate', event => {
       .then(cacheNames => {
         return Promise.all(
           cacheNames
-            .filter(cacheName => 
-              cacheName !== STATIC_CACHE && 
+            .filter(cacheName =>
+              cacheName !== STATIC_CACHE &&
               cacheName !== DYNAMIC_CACHE &&
               cacheName.startsWith('alphadroid-')
             )
@@ -67,10 +67,10 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
 
   // Skip cross-origin requests (except for specific patterns)
-  if (url.origin !== location.origin && 
-      !url.hostname.includes('fonts.googleapis.com') &&
-      !url.hostname.includes('fonts.gstatic.com') &&
-      !url.hostname.includes('cdn.jsdelivr.net')) {
+  if (url.origin !== location.origin &&
+    !url.hostname.includes('fonts.googleapis.com') &&
+    !url.hostname.includes('fonts.gstatic.com') &&
+    !url.hostname.includes('cdn.jsdelivr.net')) {
     return;
   }
 
@@ -95,7 +95,7 @@ self.addEventListener('fetch', event => {
 
               // Clone the response before caching
               const responseClone = networkResponse.clone();
-              
+
               caches.open(DYNAMIC_CACHE)
                 .then(cache => {
                   cache.put(request, responseClone);
@@ -175,7 +175,7 @@ self.addEventListener('push', event => {
 // Handle notification clicks
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  
+
   if (event.action === 'view') {
     event.waitUntil(
       clients.openWindow('/')
