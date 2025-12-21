@@ -1,5 +1,20 @@
 // Cache settings removed
 
+(function () {
+    var path = window.location.pathname || '/';
+    var search = window.location.search || '';
+
+    if (path === '/' || path === '/home') {
+        if (!window.location.hash || window.location.hash === '#') {
+            window.location.replace('/#home' + search);
+        }
+    } else if (path === '/devices') {
+        if (!window.location.hash || window.location.hash === '#') {
+            window.location.replace('/#devices' + search);
+        }
+    }
+})();
+
 // Global route state
 let routes = {};
 let sectionHashes = new Set();
