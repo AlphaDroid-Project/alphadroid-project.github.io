@@ -1508,7 +1508,7 @@ async function fetchDeviceChangelog(codename) {
     if (!codename) return null;
 
     // Try different branches and naming conventions
-    const branches = ['main', 'alpha-16.1', 'alpha-15.1', 'master'];
+    const branches = ['main', 'alpha-16.2', 'alpha-16.1', 'alpha-15.1', 'master'];
     const baseUrls = branches.map(branch => `https://raw.githubusercontent.com/AlphaDroid-devices/OTA/${branch}`);
 
     const possibleUrls = [];
