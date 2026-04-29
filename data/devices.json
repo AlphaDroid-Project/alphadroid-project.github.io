@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "fetchedAt": "2026-04-29T04:01:51.813Z",
+    "fetchedAt": "2026-04-29T16:12:18.769Z",
     "trigger": "scheduled_poll",
-    "totalFiles": 73,
-    "successfulFetches": 67,
+    "totalFiles": 74,
+    "successfulFetches": 68,
     "failedFetches": 6,
-    "fetchDurationMs": 4891
+    "fetchDurationMs": 5322
   },
   "devices": [
     {
@@ -43,67 +43,6 @@
       "lastModified": null,
       "size": "1335",
       "sha": "d6411ad61abb2dbe5d9bf08aa820385f2aa977d6"
-    },
-    {
-      "name": "apollo.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "KamiKaonashi",
-            "oem": "Xiaomi",
-            "device": "apollo",
-            "filename": "AlphaDroid-16-20251209-gapps-apollo-v4.2.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/apollo/AlphaDroid-16-20251209-gapps-apollo-v4.2.zip/download",
-            "timestamp": 1765283951,
-            "md5": "6ab94c4d7e7cfda2decee1ef57bde21f",
-            "sha256": "659aee47bb8f9c315393e96824d45d5c336dfe9b647c8bcea598d581ccd83310",
-            "size": 2512714152,
-            "version": "4.2",
-            "buildtype": "Official",
-            "buildvariant": "gapps",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "",
-            "dt": "",
-            "common-dt": "",
-            "kernel": ""
-          },
-          {
-            "maintainer": "KamiKaonashi",
-            "oem": "Xiaomi",
-            "device": "apollo",
-            "filename": "AlphaDroid-16-20251209-vanilla-apollo-v4.2.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/apollo/AlphaDroid-16-20251209-vanilla-apollo-v4.2.zip/download",
-            "timestamp": 1765281849,
-            "md5": "103578959853bc675c6fbb9953c4e675",
-            "sha256": "5799765648aa7e519d7f4e505824c65eeaa6633bfd753f617c9d0d47dd1f8d1b",
-            "size": 1614028275,
-            "version": "4.2",
-            "buildtype": "Official",
-            "buildvariant": "vanilla",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "",
-            "dt": "",
-            "common-dt": "",
-            "kernel": ""
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/apollo.json",
-      "lastModified": null,
-      "size": "1935",
-      "sha": "4bfa87d31b3fd827e8ff8161da0018d0695234ff"
     },
     {
       "name": "astonc.json",
@@ -212,20 +151,45 @@
       "sha": "06a634eca5d6a3c214c5b6405e89a55d505e7f31"
     },
     {
-      "name": "begonia.json",
+      "name": "apollo.json",
       "data": {
         "response": [
           {
             "maintainer": "KamiKaonashi",
             "oem": "Xiaomi",
-            "device": "begonia",
-            "filename": "AlphaDroid-15-20250621-vanilla-begonia-v3.2.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/begonia/AlphaDroid-15-20250621-vanilla-begonia-v3.2.1.zip/download",
-            "timestamp": 1750488229,
-            "md5": "da6a090b86f84075af21b544e633d711",
-            "sha256": "3150f5269360936a59cfe4093715619ec97322eeb1979e062f2dc6e299a06d0d",
-            "size": 1551880811,
-            "version": "3.2.1",
+            "device": "apollo",
+            "filename": "AlphaDroid-16-20251209-gapps-apollo-v4.2.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/apollo/AlphaDroid-16-20251209-gapps-apollo-v4.2.zip/download",
+            "timestamp": 1765283951,
+            "md5": "6ab94c4d7e7cfda2decee1ef57bde21f",
+            "sha256": "659aee47bb8f9c315393e96824d45d5c336dfe9b647c8bcea598d581ccd83310",
+            "size": 2512714152,
+            "version": "4.2",
+            "buildtype": "Official",
+            "buildvariant": "gapps",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "",
+            "dt": "",
+            "common-dt": "",
+            "kernel": ""
+          },
+          {
+            "maintainer": "KamiKaonashi",
+            "oem": "Xiaomi",
+            "device": "apollo",
+            "filename": "AlphaDroid-16-20251209-vanilla-apollo-v4.2.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/apollo/AlphaDroid-16-20251209-vanilla-apollo-v4.2.zip/download",
+            "timestamp": 1765281849,
+            "md5": "103578959853bc675c6fbb9953c4e675",
+            "sha256": "5799765648aa7e519d7f4e505824c65eeaa6633bfd753f617c9d0d47dd1f8d1b",
+            "size": 1614028275,
+            "version": "4.2",
             "buildtype": "Official",
             "buildvariant": "vanilla",
             "forum": "",
@@ -242,10 +206,10 @@
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/begonia.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/apollo.json",
       "lastModified": null,
-      "size": "994",
-      "sha": "830117b7878d62d88a6940a3f0d3b211a8d8bbbd"
+      "size": "1935",
+      "sha": "4bfa87d31b3fd827e8ff8161da0018d0695234ff"
     },
     {
       "name": "beryl.json",
@@ -307,6 +271,42 @@
       "lastModified": null,
       "size": "2460",
       "sha": "fb811eb1daa3d98fa142cfb19e155582907fc30f"
+    },
+    {
+      "name": "begonia.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "KamiKaonashi",
+            "oem": "Xiaomi",
+            "device": "begonia",
+            "filename": "AlphaDroid-15-20250621-vanilla-begonia-v3.2.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/begonia/AlphaDroid-15-20250621-vanilla-begonia-v3.2.1.zip/download",
+            "timestamp": 1750488229,
+            "md5": "da6a090b86f84075af21b544e633d711",
+            "sha256": "3150f5269360936a59cfe4093715619ec97322eeb1979e062f2dc6e299a06d0d",
+            "size": 1551880811,
+            "version": "3.2.1",
+            "buildtype": "Official",
+            "buildvariant": "vanilla",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "",
+            "dt": "",
+            "common-dt": "",
+            "kernel": ""
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/begonia.json",
+      "lastModified": null,
+      "size": "994",
+      "sha": "830117b7878d62d88a6940a3f0d3b211a8d8bbbd"
     },
     {
       "name": "beyond0lte.json",
@@ -438,41 +438,6 @@
       "sha": "43e7502ba3a47b0184335aa8896c944eb2d788a9"
     },
     {
-      "name": "bitra.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "Arsalan-Zeus",
-            "oem": "Realme",
-            "device": "Realme GT Neo2 5G",
-            "filename": "AlphaDroid-13.0-20230911-bitra-gapps-v1.8.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/bitra/AlphaDroid-13.0-20230911-bitra-gapps-v1.8.zip/download",
-            "timestamp": 1694419431,
-            "md5": "faa1bf1517149338a91d1eb27a5f5a3f",
-            "sha256": "d2a2701dab8e401425be92446e257dc1c233f3fec219bcdbaa0ab6bb04bfde00",
-            "size": 2622771311,
-            "version": "1.8",
-            "buildtype": "gapps",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/zeusprojekts",
-            "dt": "https://github.com/arsalan-zeus/device_realme_bitra",
-            "common-dt": "https://github.com/arsalan-zeus/device_realme_sm8250-common",
-            "kernel": "https://github.com/arsalan-zeus/kernel_realme_sm8250"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/bitra.json",
-      "lastModified": null,
-      "size": "921",
-      "sha": "dfb6fa5c7a86c911ac2d2618db99ad225002620e"
-    },
-    {
       "name": "caiman.json",
       "data": {
         "response": [
@@ -508,75 +473,39 @@
       "sha": "3eab07463a23303d3e51063071ed6df423cee899"
     },
     {
-      "name": "coral.json",
+      "name": "bitra.json",
       "data": {
         "response": [
           {
-            "maintainer": "REV3NT3CH",
-            "oem": "Google",
-            "device": "Pixel 4 XL",
-            "filename": "AlphaDroid-13.0-20231125-coral-gapps-v1.10.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/coral/AlphaDroid-13.0-20231125-coral-gapps-v1.10.zip/download",
-            "timestamp": 1700935704,
-            "md5": "0e4e37bebb0dc805cfda149094635605",
-            "sha256": "6e650d6abe2810cd75dbf4ddc3ba33712f2d44fdd7496e5e8c161fe466bb15a8",
-            "size": 1837936080,
-            "version": "1.10",
+            "maintainer": "Arsalan-Zeus",
+            "oem": "Realme",
+            "device": "Realme GT Neo2 5G",
+            "filename": "AlphaDroid-13.0-20230911-bitra-gapps-v1.8.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/bitra/AlphaDroid-13.0-20230911-bitra-gapps-v1.8.zip/download",
+            "timestamp": 1694419431,
+            "md5": "faa1bf1517149338a91d1eb27a5f5a3f",
+            "sha256": "d2a2701dab8e401425be92446e257dc1c233f3fec219bcdbaa0ab6bb04bfde00",
+            "size": 2622771311,
+            "version": "1.8",
             "buildtype": "gapps",
-            "forum": "https://t.me/alphadroid_chat",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "https://sourceforge.net/projects/alphadroid-project/files/flame/boot.img/download",
-            "paypal": "https://www.paypal.me/rev3nt3ch",
-            "telegram": "https://t.me/pixel4seriesofficial",
-            "dt": "https://github.com/AlphaDroid-devices/device_google_coral",
-            "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/B14CKB1RD_floral"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/coral.json",
-      "lastModified": null,
-      "size": "1011",
-      "sha": "212cf2583479d94b7fe5b75ba923a7fc99fa6834"
-    },
-    {
-      "name": "cheetah.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "Javi",
-            "oem": "Google",
-            "device": "cheetah",
-            "filename": "AlphaDroid-16-20260419-gapps-cheetah-v4.4.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/cheetah/AlphaDroid-16-20260419-gapps-cheetah-v4.4.zip/download",
-            "timestamp": 1776606915,
-            "md5": "227b42c43697004bdbb50a97950904be",
-            "sha256": "09561a5003192e5c675d6f1b49963202134545529231021a79f81c8226ac9c9e",
-            "size": 3119082666,
-            "version": "4.4",
-            "buildtype": "Official",
-            "buildvariant": "gapps",
             "forum": "",
             "gapps": "",
             "firmware": "",
             "modem": "",
             "bootloader": "",
-            "recovery": "https://sourceforge.net/projects/alphadroid-project/files/cheetah/recovery_images/",
+            "recovery": "",
             "paypal": "",
-            "telegram": "https://t.me/stahed_cheetah",
-            "dt": "https://github.com/AlphaDroid-devices/device_google_pantah",
-            "common-dt": "",
-            "kernel": "https://github.com/LineageOS/android_device_google_pantah-kernels"
+            "telegram": "https://t.me/zeusprojekts",
+            "dt": "https://github.com/arsalan-zeus/device_realme_bitra",
+            "common-dt": "https://github.com/arsalan-zeus/device_realme_sm8250-common",
+            "kernel": "https://github.com/arsalan-zeus/kernel_realme_sm8250"
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/cheetah.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/bitra.json",
       "lastModified": null,
-      "size": "1206",
-      "sha": "2965f76046136ca5d4185fbbcb9fe205e279432b"
+      "size": "921",
+      "sha": "dfb6fa5c7a86c911ac2d2618db99ad225002620e"
     },
     {
       "name": "camellia.json",
@@ -638,19 +567,19 @@
       "sha": "309e68dd717492d27d01d45d144b01c5aa2e79e5"
     },
     {
-      "name": "dodge.json",
+      "name": "cheetah.json",
       "data": {
         "response": [
           {
-            "maintainer": "OscarM1019",
-            "oem": "OnePlus",
-            "device": "dodge",
-            "filename": "AlphaDroid-16-20260418-gapps-dodge-v4.4.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/dodge/AlphaDroid-16-20260418-gapps-dodge-v4.4.zip/download",
-            "timestamp": 1776539878,
-            "md5": "53f22fffe3b1b915d620c92f4435d9a9",
-            "sha256": "fc28db03d6b8af6835057318b18b66f5a3260aacf5e31ed563a6a41174799627",
-            "size": 4446222672,
+            "maintainer": "Javi",
+            "oem": "Google",
+            "device": "cheetah",
+            "filename": "AlphaDroid-16-20260419-gapps-cheetah-v4.4.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/cheetah/AlphaDroid-16-20260419-gapps-cheetah-v4.4.zip/download",
+            "timestamp": 1776606915,
+            "md5": "227b42c43697004bdbb50a97950904be",
+            "sha256": "09561a5003192e5c675d6f1b49963202134545529231021a79f81c8226ac9c9e",
+            "size": 3119082666,
             "version": "4.4",
             "buildtype": "Official",
             "buildvariant": "gapps",
@@ -659,19 +588,54 @@
             "firmware": "",
             "modem": "",
             "bootloader": "",
-            "recovery": "",
-            "paypal": "https://www.paypal.com/paypalme/osmjr1019",
-            "telegram": "https://t.me/OP13CustomRoms/3",
-            "dt": "",
+            "recovery": "https://sourceforge.net/projects/alphadroid-project/files/cheetah/recovery_images/",
+            "paypal": "",
+            "telegram": "https://t.me/stahed_cheetah",
+            "dt": "https://github.com/AlphaDroid-devices/device_google_pantah",
             "common-dt": "",
-            "kernel": ""
+            "kernel": "https://github.com/LineageOS/android_device_google_pantah-kernels"
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/dodge.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/cheetah.json",
       "lastModified": null,
-      "size": "1043",
-      "sha": "af033f2cb64fb6623c3ace8d6157659ae224600b"
+      "size": "1206",
+      "sha": "2965f76046136ca5d4185fbbcb9fe205e279432b"
+    },
+    {
+      "name": "coral.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "REV3NT3CH",
+            "oem": "Google",
+            "device": "Pixel 4 XL",
+            "filename": "AlphaDroid-13.0-20231125-coral-gapps-v1.10.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/coral/AlphaDroid-13.0-20231125-coral-gapps-v1.10.zip/download",
+            "timestamp": 1700935704,
+            "md5": "0e4e37bebb0dc805cfda149094635605",
+            "sha256": "6e650d6abe2810cd75dbf4ddc3ba33712f2d44fdd7496e5e8c161fe466bb15a8",
+            "size": 1837936080,
+            "version": "1.10",
+            "buildtype": "gapps",
+            "forum": "https://t.me/alphadroid_chat",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "https://sourceforge.net/projects/alphadroid-project/files/flame/boot.img/download",
+            "paypal": "https://www.paypal.me/rev3nt3ch",
+            "telegram": "https://t.me/pixel4seriesofficial",
+            "dt": "https://github.com/AlphaDroid-devices/device_google_coral",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/B14CKB1RD_floral"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/coral.json",
+      "lastModified": null,
+      "size": "1011",
+      "sha": "212cf2583479d94b7fe5b75ba923a7fc99fa6834"
     },
     {
       "name": "d2s.json",
@@ -733,41 +697,6 @@
       "sha": "2f1042f26c5927b9cd244ca9cd18c188c6450b00"
     },
     {
-      "name": "devon.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "jay && josexda",
-            "oem": "",
-            "device": "Moto G32 (devon)",
-            "filename": "AlphaDroid-14.0-20231231-devon-gapps-v2.0.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/devon/AlphaDroid-14.0-20231231-devon-gapps-v2.0.zip/download",
-            "timestamp": 1704016284,
-            "md5": "a3ee24fd4c5e30ef2bfaee7336cd8da3",
-            "sha256": "181657b355120f9c25c574c4f18ab8134032fff97327cec1120d1f3a16edee1c",
-            "size": 1407981831,
-            "version": "2.0",
-            "buildtype": "GAPPS",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/sdm680_moto",
-            "dt": "https://github.com/AlphaDroid-devices/device_motorola_devon",
-            "common-dt": "https://github.com/AlphaDroid-devices/device_motorola_sm6225-common",
-            "kernel": "https://github.com/SM6225-Project/kernel_motorola_sm6225"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/devon.json",
-      "lastModified": null,
-      "size": "935",
-      "sha": "0d8d58b176502db6879b38e1922255528f3a3f6a"
-    },
-    {
       "name": "davinci.json",
       "data": {
         "response": [
@@ -804,63 +733,75 @@
       "sha": "8ff5fc959488bf2d4a6ce288896e52b5435aa315"
     },
     {
-      "name": "ginkgo.json",
+      "name": "dodge.json",
       "data": {
         "response": [
           {
-            "maintainer": "Munir Nasibzade",
-            "oem": "Xiaomi",
-            "device": "Xiaomi Redmi Note 8",
-            "filename": "AlphaDroid-15.1-20250223-gapps-ginkgo-v3.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/ginkgo/AlphaDroid-15.1-20250223-gapps-ginkgo-v3.1.zip/download",
-            "timestamp": 1740292714,
-            "md5": "8850f32b2b53cf9e2b3fb335fbcc2030",
-            "sha256": "4168eb44b46c99fea43179e0cb4bb83f5fc0713281c7843b91235fed2b9f731b",
-            "size": 1628441517,
-            "version": "3.1",
-            "buildtype": "",
+            "maintainer": "OscarM1019",
+            "oem": "OnePlus",
+            "device": "dodge",
+            "filename": "AlphaDroid-16-20260418-gapps-dodge-v4.4.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/dodge/AlphaDroid-16-20260418-gapps-dodge-v4.4.zip/download",
+            "timestamp": 1776539878,
+            "md5": "53f22fffe3b1b915d620c92f4435d9a9",
+            "sha256": "fc28db03d6b8af6835057318b18b66f5a3260aacf5e31ed563a6a41174799627",
+            "size": 4446222672,
+            "version": "4.4",
+            "buildtype": "Official",
+            "buildvariant": "gapps",
             "forum": "",
             "gapps": "",
             "firmware": "",
             "modem": "",
             "bootloader": "",
             "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/shawkbuilddiscussion",
-            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_ginkgo",
+            "paypal": "https://www.paypal.com/paypalme/osmjr1019",
+            "telegram": "https://t.me/OP13CustomRoms/3",
+            "dt": "",
             "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_ginkgo"
-          },
-          {
-            "maintainer": "Munir Nasibzade",
-            "oem": "Xiaomi",
-            "device": "Xiaomi Redmi Note 8",
-            "filename": "AlphaDroid-15.1-20250223-vanilla-ginkgo-v3.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/ginkgo/AlphaDroid-15.1-20250223-vanilla-ginkgo-v3.1.zip/download",
-            "timestamp": 1740297029,
-            "md5": "5c87b98167a28db597f01e5f5a4d78b0",
-            "sha256": "17d7619262a5daf9967771c471e7834c19a4d5b2919c15a8272656f131a64ed4",
-            "size": 1493066190,
-            "version": "3.1",
-            "buildtype": "",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/shawkbuilddiscussion",
-            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_ginkgo",
-            "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_ginkgo"
+            "kernel": ""
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/ginkgo.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/dodge.json",
       "lastModified": null,
-      "size": "2181",
-      "sha": "5b7b5980f7213236ccfe517159f25e1940ab6627"
+      "size": "1043",
+      "sha": "af033f2cb64fb6623c3ace8d6157659ae224600b"
+    },
+    {
+      "name": "devon.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "jay && josexda",
+            "oem": "",
+            "device": "Moto G32 (devon)",
+            "filename": "AlphaDroid-14.0-20231231-devon-gapps-v2.0.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/devon/AlphaDroid-14.0-20231231-devon-gapps-v2.0.zip/download",
+            "timestamp": 1704016284,
+            "md5": "a3ee24fd4c5e30ef2bfaee7336cd8da3",
+            "sha256": "181657b355120f9c25c574c4f18ab8134032fff97327cec1120d1f3a16edee1c",
+            "size": 1407981831,
+            "version": "2.0",
+            "buildtype": "GAPPS",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/sdm680_moto",
+            "dt": "https://github.com/AlphaDroid-devices/device_motorola_devon",
+            "common-dt": "https://github.com/AlphaDroid-devices/device_motorola_sm6225-common",
+            "kernel": "https://github.com/SM6225-Project/kernel_motorola_sm6225"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/devon.json",
+      "lastModified": null,
+      "size": "935",
+      "sha": "0d8d58b176502db6879b38e1922255528f3a3f6a"
     },
     {
       "name": "grus.json",
@@ -924,76 +865,6 @@
       "sha": "62b6b43744b0375553e9139c38cb0f137bd965f1"
     },
     {
-      "name": "flame.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "REV3NT3CH",
-            "oem": "Google",
-            "device": "Pixel 4",
-            "filename": "AlphaDroid-13.0-20231125-flame-gapps-v1.10.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/flame/AlphaDroid-13.0-20231125-flame-gapps-v1.10.zip/download",
-            "timestamp": 1700948715,
-            "md5": "1fbefd52e3e5d317ea9a9135ac6b0357",
-            "sha256": "5fe9f6b844c2b5f183a90cbbd94146a3819e7c2af444cc135352a06816d9d0e4",
-            "size": 1837599540,
-            "version": "1.10",
-            "buildtype": "gapps",
-            "forum": "https://t.me/alphadroid_chat",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "https://sourceforge.net/projects/alphadroid-project/files/flame/boot.img/download",
-            "paypal": "https://www.paypal.me/rev3nt3ch",
-            "telegram": "https://t.me/pixel4seriesofficial",
-            "dt": "https://github.com/AlphaDroid-devices/device_google_coral",
-            "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/B14CKB1RD_floral"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/flame.json",
-      "lastModified": null,
-      "size": "1008",
-      "sha": "f8fbf973883c80482d1eef3788c0b82b99e81833"
-    },
-    {
-      "name": "fog.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "ⓓⓑⓛⓔⓝⓚ",
-            "oem": "Xiaomi",
-            "device": "Xiaomi Redmi 10C",
-            "filename": "AlphaDroid-13.0-20230504-fog-vanilla-v1.5.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/fog/AlphaDroid-13.0-20230504-fog-vanilla-v1.5.zip/download",
-            "timestamp": 1683210452,
-            "md5": "6eb541abeb5407bb661c48c57f64960f",
-            "sha256": "46b02507f645187d918cc67bc07ac49b88eb19eb71e7b74f2d1173a013340eda",
-            "size": 1085105875,
-            "version": "1.5",
-            "buildtype": "vanilla",
-            "forum": "https://t.me/alphadroid_chat",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/diskusiromlah",
-            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_fog",
-            "common-dt": "",
-            "kernel": ""
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/fog.json",
-      "lastModified": null,
-      "size": "848",
-      "sha": "4dba2853cd80bb22e6b8d31effa721bb73a5862b"
-    },
-    {
       "name": "garnet.json",
       "data": {
         "response": [
@@ -1055,87 +926,133 @@
       "sha": "1eab5cb6c82d99df8cb25bf03418b61588f669fe"
     },
     {
-      "name": "instantnoodlep.json",
+      "name": "flame.json",
       "data": {
         "response": [
           {
-            "maintainer": "zizzyboi",
-            "oem": "OnePlus",
-            "device": "8 Pro",
-            "filename": "AlphaDroid-14.0-20240518-instantnoodlep-microg-v2.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/instantnoodlep/AlphaDroid-14.0-20240518-instantnoodlep-microg-v2.1.zip/download",
-            "timestamp": 1716073419,
-            "md5": "098a99083d47d8b2bf0a0adbdb9f8abc",
-            "sha256": "bf00823a1453efc80604b05963486fb2348bb698ddd0eb59184cb89c5f36464c",
-            "size": 1800381248,
-            "version": "2.1",
-            "buildtype": "microg",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "https://paypal.me/zizzyboi?country.x=CA&locale.x=en_US",
-            "telegram": "https://t.me/zahidsromfactory",
-            "dt": "https://github.com/AlphaDroid-devices/device-oneplus-instantnoodlep",
-            "common-dt": "https://github.com/AlphaDroid-devices/device_oneplus_sm8250-common",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_oneplus_sm8250"
-          },
-          {
-            "maintainer": "zizzyboi",
-            "oem": "OnePlus",
-            "device": "8 Pro",
-            "filename": "AlphaDroid-14.0-20240518-instantnoodlep-gapps-v2.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/instantnoodlep/AlphaDroid-14.0-20240518-instantnoodlep-gapps-v2.1.zip/download",
-            "timestamp": 1716055246,
-            "md5": "d914412279348f13bed3bce6cfc3365b",
-            "sha256": "e99552fd1c36ed8be75b8c14ed58223bf131be1e91c526e56c47842145962023",
-            "size": 2265902819,
-            "version": "2.1",
+            "maintainer": "REV3NT3CH",
+            "oem": "Google",
+            "device": "Pixel 4",
+            "filename": "AlphaDroid-13.0-20231125-flame-gapps-v1.10.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/flame/AlphaDroid-13.0-20231125-flame-gapps-v1.10.zip/download",
+            "timestamp": 1700948715,
+            "md5": "1fbefd52e3e5d317ea9a9135ac6b0357",
+            "sha256": "5fe9f6b844c2b5f183a90cbbd94146a3819e7c2af444cc135352a06816d9d0e4",
+            "size": 1837599540,
+            "version": "1.10",
             "buildtype": "gapps",
-            "forum": "",
+            "forum": "https://t.me/alphadroid_chat",
             "gapps": "",
             "firmware": "",
             "modem": "",
             "bootloader": "",
-            "recovery": "",
-            "paypal": "https://paypal.me/zizzyboi?country.x=CA&locale.x=en_US",
-            "telegram": "https://t.me/zahidsromfactory",
-            "dt": "https://github.com/AlphaDroid-devices/device-oneplus-instantnoodlep",
-            "common-dt": "https://github.com/AlphaDroid-devices/device_oneplus_sm8250-common",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_oneplus_sm8250"
-          },
-          {
-            "maintainer": "zizzyboi",
-            "oem": "OnePlus",
-            "device": "8 Pro",
-            "filename": "AlphaDroid-14.0-20240518-instantnoodlep-vanilla-v2.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/instantnoodlep/AlphaDroid-14.0-20240518-instantnoodlep-vanilla-v2.1.zip/download",
-            "timestamp": 1716003202,
-            "md5": "90bb2b99084273578cb3f27fa04bd356",
-            "sha256": "7dabc848549e9afdc8e39a678ecd0c14cce2371914f8a2b51e51880288c7f7df",
-            "size": 1757214064,
-            "version": "2.1",
-            "buildtype": "vanilla",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "https://paypal.me/zizzyboi?country.x=CA&locale.x=en_US",
-            "telegram": "https://t.me/zahidsromfactory",
-            "dt": "https://github.com/AlphaDroid-devices/device-oneplus-instantnoodlep",
-            "common-dt": "https://github.com/AlphaDroid-devices/device_oneplus_sm8250-common",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_oneplus_sm8250"
+            "recovery": "https://sourceforge.net/projects/alphadroid-project/files/flame/boot.img/download",
+            "paypal": "https://www.paypal.me/rev3nt3ch",
+            "telegram": "https://t.me/pixel4seriesofficial",
+            "dt": "https://github.com/AlphaDroid-devices/device_google_coral",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/B14CKB1RD_floral"
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/instantnoodlep.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/flame.json",
       "lastModified": null,
-      "size": "3034",
-      "sha": "3d082194bcb162eb4a2ff8286df63dc9ce598c63"
+      "size": "1008",
+      "sha": "f8fbf973883c80482d1eef3788c0b82b99e81833"
+    },
+    {
+      "name": "ginkgo.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "Munir Nasibzade",
+            "oem": "Xiaomi",
+            "device": "Xiaomi Redmi Note 8",
+            "filename": "AlphaDroid-15.1-20250223-gapps-ginkgo-v3.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/ginkgo/AlphaDroid-15.1-20250223-gapps-ginkgo-v3.1.zip/download",
+            "timestamp": 1740292714,
+            "md5": "8850f32b2b53cf9e2b3fb335fbcc2030",
+            "sha256": "4168eb44b46c99fea43179e0cb4bb83f5fc0713281c7843b91235fed2b9f731b",
+            "size": 1628441517,
+            "version": "3.1",
+            "buildtype": "",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/shawkbuilddiscussion",
+            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_ginkgo",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_ginkgo"
+          },
+          {
+            "maintainer": "Munir Nasibzade",
+            "oem": "Xiaomi",
+            "device": "Xiaomi Redmi Note 8",
+            "filename": "AlphaDroid-15.1-20250223-vanilla-ginkgo-v3.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/ginkgo/AlphaDroid-15.1-20250223-vanilla-ginkgo-v3.1.zip/download",
+            "timestamp": 1740297029,
+            "md5": "5c87b98167a28db597f01e5f5a4d78b0",
+            "sha256": "17d7619262a5daf9967771c471e7834c19a4d5b2919c15a8272656f131a64ed4",
+            "size": 1493066190,
+            "version": "3.1",
+            "buildtype": "",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/shawkbuilddiscussion",
+            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_ginkgo",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_ginkgo"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/ginkgo.json",
+      "lastModified": null,
+      "size": "2181",
+      "sha": "5b7b5980f7213236ccfe517159f25e1940ab6627"
+    },
+    {
+      "name": "fog.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "ⓓⓑⓛⓔⓝⓚ",
+            "oem": "Xiaomi",
+            "device": "Xiaomi Redmi 10C",
+            "filename": "AlphaDroid-13.0-20230504-fog-vanilla-v1.5.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/fog/AlphaDroid-13.0-20230504-fog-vanilla-v1.5.zip/download",
+            "timestamp": 1683210452,
+            "md5": "6eb541abeb5407bb661c48c57f64960f",
+            "sha256": "46b02507f645187d918cc67bc07ac49b88eb19eb71e7b74f2d1173a013340eda",
+            "size": 1085105875,
+            "version": "1.5",
+            "buildtype": "vanilla",
+            "forum": "https://t.me/alphadroid_chat",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/diskusiromlah",
+            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_fog",
+            "common-dt": "",
+            "kernel": ""
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/fog.json",
+      "lastModified": null,
+      "size": "848",
+      "sha": "4dba2853cd80bb22e6b8d31effa721bb73a5862b"
     },
     {
       "name": "husky.json",
@@ -1256,6 +1173,124 @@
       "sha": "4a7113edd6d3947159ece61415c357fbc04788ef"
     },
     {
+      "name": "instantnoodlep.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "zizzyboi",
+            "oem": "OnePlus",
+            "device": "8 Pro",
+            "filename": "AlphaDroid-14.0-20240518-instantnoodlep-microg-v2.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/instantnoodlep/AlphaDroid-14.0-20240518-instantnoodlep-microg-v2.1.zip/download",
+            "timestamp": 1716073419,
+            "md5": "098a99083d47d8b2bf0a0adbdb9f8abc",
+            "sha256": "bf00823a1453efc80604b05963486fb2348bb698ddd0eb59184cb89c5f36464c",
+            "size": 1800381248,
+            "version": "2.1",
+            "buildtype": "microg",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "https://paypal.me/zizzyboi?country.x=CA&locale.x=en_US",
+            "telegram": "https://t.me/zahidsromfactory",
+            "dt": "https://github.com/AlphaDroid-devices/device-oneplus-instantnoodlep",
+            "common-dt": "https://github.com/AlphaDroid-devices/device_oneplus_sm8250-common",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_oneplus_sm8250"
+          },
+          {
+            "maintainer": "zizzyboi",
+            "oem": "OnePlus",
+            "device": "8 Pro",
+            "filename": "AlphaDroid-14.0-20240518-instantnoodlep-gapps-v2.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/instantnoodlep/AlphaDroid-14.0-20240518-instantnoodlep-gapps-v2.1.zip/download",
+            "timestamp": 1716055246,
+            "md5": "d914412279348f13bed3bce6cfc3365b",
+            "sha256": "e99552fd1c36ed8be75b8c14ed58223bf131be1e91c526e56c47842145962023",
+            "size": 2265902819,
+            "version": "2.1",
+            "buildtype": "gapps",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "https://paypal.me/zizzyboi?country.x=CA&locale.x=en_US",
+            "telegram": "https://t.me/zahidsromfactory",
+            "dt": "https://github.com/AlphaDroid-devices/device-oneplus-instantnoodlep",
+            "common-dt": "https://github.com/AlphaDroid-devices/device_oneplus_sm8250-common",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_oneplus_sm8250"
+          },
+          {
+            "maintainer": "zizzyboi",
+            "oem": "OnePlus",
+            "device": "8 Pro",
+            "filename": "AlphaDroid-14.0-20240518-instantnoodlep-vanilla-v2.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/instantnoodlep/AlphaDroid-14.0-20240518-instantnoodlep-vanilla-v2.1.zip/download",
+            "timestamp": 1716003202,
+            "md5": "90bb2b99084273578cb3f27fa04bd356",
+            "sha256": "7dabc848549e9afdc8e39a678ecd0c14cce2371914f8a2b51e51880288c7f7df",
+            "size": 1757214064,
+            "version": "2.1",
+            "buildtype": "vanilla",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "https://paypal.me/zizzyboi?country.x=CA&locale.x=en_US",
+            "telegram": "https://t.me/zahidsromfactory",
+            "dt": "https://github.com/AlphaDroid-devices/device-oneplus-instantnoodlep",
+            "common-dt": "https://github.com/AlphaDroid-devices/device_oneplus_sm8250-common",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_oneplus_sm8250"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/instantnoodlep.json",
+      "lastModified": null,
+      "size": "3034",
+      "sha": "3d082194bcb162eb4a2ff8286df63dc9ce598c63"
+    },
+    {
+      "name": "hawao.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "",
+            "oem": "",
+            "device": "",
+            "filename": "AlphaDroid-14.0-20231231-hawao-gapps-v2.0.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/hawao/AlphaDroid-14.0-20231231-hawao-gapps-v2.0.zip/download",
+            "timestamp": 1704024488,
+            "md5": "f985089fb745c02f24edfa9b6ce275f1",
+            "sha256": "c6166a5858508778ab313c72490f02dc1e7af9e5a4e0744082f5e4ff4ba79ae5",
+            "size": 1403840706,
+            "version": "2.0",
+            "buildtype": "",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/sdm680_moto",
+            "dt": "https://github.com/AlphaDroid-devices/device_motorola_devon",
+            "common-dt": "https://github.com/AlphaDroid-devices/device_motorola_sm6225-common",
+            "kernel": "https://github.com/SM6225-Project/kernel_motorola_sm6225"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/hawao.json",
+      "lastModified": null,
+      "size": "900",
+      "sha": "0dd49e4f0a9fd232416be31befceebd988f210fb"
+    },
+    {
       "name": "kebab.json",
       "data": {
         "response": [
@@ -1339,21 +1374,92 @@
       "sha": "3eabdb4b9af22df74f20c4eb8945acc1d0bf1e2e"
     },
     {
-      "name": "hawao.json",
+      "name": "komodo.json",
       "data": {
         "response": [
           {
-            "maintainer": "",
-            "oem": "",
-            "device": "",
-            "filename": "AlphaDroid-14.0-20231231-hawao-gapps-v2.0.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/hawao/AlphaDroid-14.0-20231231-hawao-gapps-v2.0.zip/download",
-            "timestamp": 1704024488,
-            "md5": "f985089fb745c02f24edfa9b6ce275f1",
-            "sha256": "c6166a5858508778ab313c72490f02dc1e7af9e5a4e0744082f5e4ff4ba79ae5",
-            "size": 1403840706,
-            "version": "2.0",
-            "buildtype": "",
+            "maintainer": "OscarM",
+            "oem": "Google",
+            "device": "Pixel 9 Pro XL",
+            "filename": "AlphaDroid-15.1-20250223-gapps-komodo-v3.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/komodo/AlphaDroid-15.1-20250223-gapps-komodo-v3.1.zip/download",
+            "timestamp": 1740279273,
+            "md5": "bfe82c924320b86c9296319272c10bea",
+            "sha256": "eb7e31988d7f6e462aaa53b665bb1846cc478d2311d9d7024652dd1050c13a53",
+            "size": 2789831076,
+            "version": "3.1",
+            "buildtype": "Official",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "https://www.paypal.me/osmjr1019",
+            "telegram": "https://t.me/caimito_roms",
+            "dt": "https://github.com/AlphaDroid-devices/device_google_caimito",
+            "common-dt": "https://github.com/AlphaDroid-devices/device_google_zumapro",
+            "kernel": ""
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/komodo.json",
+      "lastModified": null,
+      "size": "1121",
+      "sha": "399856fd1dc76c3d93fed10071463aa82641f475"
+    },
+    {
+      "name": "lynx.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "Javi",
+            "oem": "Google",
+            "device": "lynx",
+            "filename": "AlphaDroid-16-20260426-gapps-lynx-v4.4.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/lynx/AlphaDroid-16-20260426-gapps-lynx-v4.4.zip/download",
+            "timestamp": 1777214379,
+            "md5": "0ac56e4cfbcd8e14945cac3ecf68d63a",
+            "sha256": "a423497bb2e8459888e6413153feaaa90bfbd38c282135babc8ec34d4e9cf564",
+            "size": 2296747618,
+            "version": "4.4",
+            "buildtype": "Official",
+            "buildvariant": "gapps",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "https://sourceforge.net/projects/alphadroid-project/files/lynx/recovery_images/",
+            "paypal": "",
+            "telegram": "https://t.me/stahed_cheetah",
+            "dt": "",
+            "common-dt": "",
+            "kernel": "https://github.com/LineageOS/android_device_google_lynx-kernels"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/lynx.json",
+      "lastModified": null,
+      "size": "1131",
+      "sha": "cacd3010461ebd93c913b85b36b92f020d769387"
+    },
+    {
+      "name": "lemonadep.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "JYR_RC",
+            "oem": "oneplus",
+            "device": "9 pro",
+            "filename": "AlphaDroid-14.0-20240820-lemonadep-gapps-v2.4.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/lemonadep/AlphaDroid-14.0-20240820-lemonadep-gapps-v2.4.zip/download",
+            "timestamp": 1724164757,
+            "md5": "db36ea158a6b7598344633e7a624440a",
+            "sha256": "d01aa4014c64305fd503aec04f0cca600ac1a728f7b49150e9fdd3536192cfe8",
+            "size": 2484434310,
+            "version": "2.4",
+            "buildtype": "gapps",
             "forum": "",
             "gapps": "",
             "firmware": "",
@@ -1361,76 +1467,17 @@
             "bootloader": "",
             "recovery": "",
             "paypal": "",
-            "telegram": "https://t.me/sdm680_moto",
-            "dt": "https://github.com/AlphaDroid-devices/device_motorola_devon",
-            "common-dt": "https://github.com/AlphaDroid-devices/device_motorola_sm6225-common",
-            "kernel": "https://github.com/SM6225-Project/kernel_motorola_sm6225"
+            "telegram": "https://t.me/JYR_RC_lemonadep",
+            "dt": "https://github.com/AlphaDroid-devices/device_oneplus_lemonadep",
+            "common-dt": "https://github.com/AlphaDroid-devices/device_oneplus_sm8350-common",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_oneplus_sm8350"
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/hawao.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/lemonadep.json",
       "lastModified": null,
-      "size": "900",
-      "sha": "0dd49e4f0a9fd232416be31befceebd988f210fb"
-    },
-    {
-      "name": "mi439.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "Jprimero15",
-            "oem": "Xiaomi",
-            "device": "Redmi 7A / 8 / 8A / 8A Dual",
-            "filename": "AlphaDroid-13.0-20230720-mi439-vanilla-v1.7.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/mi439/AlphaDroid-13.0-20230720-mi439-vanilla-v1.7.zip/download",
-            "timestamp": 1689853965,
-            "md5": "dba04ee8eb526c2724b56b86930fe139",
-            "sha256": "1bfe37ab5c0c06626be7d811d26c1599eb98d839e213f871df626720f1fccee4",
-            "size": 1103176045,
-            "version": "1.7",
-            "buildtype": "vanilla",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "https://paypal.me/lolzkernel",
-            "telegram": "https://t.me/Jprimero15",
-            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_mi439",
-            "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_sdm439"
-          },
-          {
-            "maintainer": "Jprimero15",
-            "oem": "Xiaomi",
-            "device": "Redmi 7A / 8 / 8A / 8A Dual",
-            "filename": "",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/mi439/AlphaDroid-13.0-20230530-mi439-vanilla-v1.5.1.zip/download",
-            "timestamp": 1685463956,
-            "md5": "89970f21aeebaa5ef2b13c3b933a7aff",
-            "sha256": "b445742c15bf7650bcb5e827d4b22afc779387af568c647b882ba687831fbf4a",
-            "size": 1101532718,
-            "version": "1.5.1",
-            "buildtype": "vanilla",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "https://paypal.me/lolzkernel",
-            "telegram": "https://t.me/Jprimero15",
-            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_mi439",
-            "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_sdm439"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/mi439.json",
-      "lastModified": null,
-      "size": "2254",
-      "sha": "4ad9ffb9c6c508d69e84013dd0d3e6b875a05107"
+      "size": "945",
+      "sha": "a695f7c07a5f76a9c8a75bf2d3aabafd9ff49942"
     },
     {
       "name": "marble.json",
@@ -1492,41 +1539,6 @@
       "lastModified": null,
       "size": "2818",
       "sha": "a450506d9472b95664fd2cdae9d3562c8082650f"
-    },
-    {
-      "name": "komodo.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "OscarM",
-            "oem": "Google",
-            "device": "Pixel 9 Pro XL",
-            "filename": "AlphaDroid-15.1-20250223-gapps-komodo-v3.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/komodo/AlphaDroid-15.1-20250223-gapps-komodo-v3.1.zip/download",
-            "timestamp": 1740279273,
-            "md5": "bfe82c924320b86c9296319272c10bea",
-            "sha256": "eb7e31988d7f6e462aaa53b665bb1846cc478d2311d9d7024652dd1050c13a53",
-            "size": 2789831076,
-            "version": "3.1",
-            "buildtype": "Official",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "https://www.paypal.me/osmjr1019",
-            "telegram": "https://t.me/caimito_roms",
-            "dt": "https://github.com/AlphaDroid-devices/device_google_caimito",
-            "common-dt": "https://github.com/AlphaDroid-devices/device_google_zumapro",
-            "kernel": ""
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/komodo.json",
-      "lastModified": null,
-      "size": "1121",
-      "sha": "399856fd1dc76c3d93fed10071463aa82641f475"
     },
     {
       "name": "lemonades.json",
@@ -1612,41 +1624,6 @@
       "sha": "9dc474dcd6da66cfea169808087d754e387aec6c"
     },
     {
-      "name": "lemonadep.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "JYR_RC",
-            "oem": "oneplus",
-            "device": "9 pro",
-            "filename": "AlphaDroid-14.0-20240820-lemonadep-gapps-v2.4.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/lemonadep/AlphaDroid-14.0-20240820-lemonadep-gapps-v2.4.zip/download",
-            "timestamp": 1724164757,
-            "md5": "db36ea158a6b7598344633e7a624440a",
-            "sha256": "d01aa4014c64305fd503aec04f0cca600ac1a728f7b49150e9fdd3536192cfe8",
-            "size": 2484434310,
-            "version": "2.4",
-            "buildtype": "gapps",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/JYR_RC_lemonadep",
-            "dt": "https://github.com/AlphaDroid-devices/device_oneplus_lemonadep",
-            "common-dt": "https://github.com/AlphaDroid-devices/device_oneplus_sm8350-common",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_oneplus_sm8350"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/lemonadep.json",
-      "lastModified": null,
-      "size": "945",
-      "sha": "a695f7c07a5f76a9c8a75bf2d3aabafd9ff49942"
-    },
-    {
       "name": "miatoll.json",
       "data": {
         "response": [
@@ -1708,39 +1685,63 @@
       "sha": "2cda5a3f1947f6ab430984cf7808cdccc1e8b558"
     },
     {
-      "name": "panther.json",
+      "name": "mi439.json",
       "data": {
         "response": [
           {
-            "maintainer": "Pyrtle93",
-            "oem": "Google",
-            "device": "7",
-            "filename": "AlphaDroid-13.0-20231020-panther-gapps-v1.10.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/panther/AlphaDroid-13.0-20231020-panther-gapps-v1.10.zip/download",
-            "timestamp": 1697757950,
-            "md5": "fbb7e67bbc89a113081928cadeeb33e0",
-            "sha256": "0656f1f1e5720ee98d496cc0649b0c28e4b80c69c90bd3931b9e56d7a8ca04a6",
-            "size": 2447335084,
-            "version": "1.10",
-            "buildtype": "gapps",
-            "forum": "https://xdaforums.com/t/rom-official-13-0-alphadroid-1-10-cheetah-10-20-2023.4624145/",
+            "maintainer": "Jprimero15",
+            "oem": "Xiaomi",
+            "device": "Redmi 7A / 8 / 8A / 8A Dual",
+            "filename": "AlphaDroid-13.0-20230720-mi439-vanilla-v1.7.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/mi439/AlphaDroid-13.0-20230720-mi439-vanilla-v1.7.zip/download",
+            "timestamp": 1689853965,
+            "md5": "dba04ee8eb526c2724b56b86930fe139",
+            "sha256": "1bfe37ab5c0c06626be7d811d26c1599eb98d839e213f871df626720f1fccee4",
+            "size": 1103176045,
+            "version": "1.7",
+            "buildtype": "vanilla",
+            "forum": "",
             "gapps": "",
             "firmware": "",
             "modem": "",
             "bootloader": "",
             "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/PyrtlesPixels",
-            "dt": "https://github.com/AlphaDroid-devices/device_google_gs201",
-            "common-dt": "https://github.com/AlphaDroid-devices/device_google_pantah",
-            "kernel": "https://github.com/AlphaDroid-devices/Kirisakura_Pantah"
+            "paypal": "https://paypal.me/lolzkernel",
+            "telegram": "https://t.me/Jprimero15",
+            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_mi439",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_sdm439"
+          },
+          {
+            "maintainer": "Jprimero15",
+            "oem": "Xiaomi",
+            "device": "Redmi 7A / 8 / 8A / 8A Dual",
+            "filename": "",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/mi439/AlphaDroid-13.0-20230530-mi439-vanilla-v1.5.1.zip/download",
+            "timestamp": 1685463956,
+            "md5": "89970f21aeebaa5ef2b13c3b933a7aff",
+            "sha256": "b445742c15bf7650bcb5e827d4b22afc779387af568c647b882ba687831fbf4a",
+            "size": 1101532718,
+            "version": "1.5.1",
+            "buildtype": "vanilla",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "https://paypal.me/lolzkernel",
+            "telegram": "https://t.me/Jprimero15",
+            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_mi439",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_sdm439"
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/panther.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/mi439.json",
       "lastModified": null,
-      "size": "1004",
-      "sha": "9bdd6e0ba0cafe660ae6584db8b5e2667d992ee6"
+      "size": "2254",
+      "sha": "4ad9ffb9c6c508d69e84013dd0d3e6b875a05107"
     },
     {
       "name": "oriole.json",
@@ -1875,39 +1876,39 @@
       "sha": "dc0a85d4ffd849eaaff093f760998ea10c06d710"
     },
     {
-      "name": "raven.json",
+      "name": "panther.json",
       "data": {
         "response": [
           {
-            "maintainer": "IczYn",
+            "maintainer": "Pyrtle93",
             "oem": "Google",
-            "device": "Google Pixel 6 Pro",
-            "filename": "AlphaDroid-14.0-20240912-raven-vanilla-v2.5.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/raven/AlphaDroid-14.0-20240912-raven-vanilla-v2.5.zip/download",
-            "timestamp": 1726127767,
-            "md5": "ba2107da7e88c652ec6a5f7940b15880",
-            "sha256": "a4c4ec9bc20b195b46191109110aed8fb17bbffbad43999d5ac1c18e415fd2c5",
-            "size": 1653658574,
-            "version": "2.5",
-            "buildtype": "vanilla",
-            "forum": "https://t.me/alphadroid_chat",
+            "device": "7",
+            "filename": "AlphaDroid-13.0-20231020-panther-gapps-v1.10.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/panther/AlphaDroid-13.0-20231020-panther-gapps-v1.10.zip/download",
+            "timestamp": 1697757950,
+            "md5": "fbb7e67bbc89a113081928cadeeb33e0",
+            "sha256": "0656f1f1e5720ee98d496cc0649b0c28e4b80c69c90bd3931b9e56d7a8ca04a6",
+            "size": 2447335084,
+            "version": "1.10",
+            "buildtype": "gapps",
+            "forum": "https://xdaforums.com/t/rom-official-13-0-alphadroid-1-10-cheetah-10-20-2023.4624145/",
             "gapps": "",
             "firmware": "",
             "modem": "",
             "bootloader": "",
-            "recovery": "https://drive.google.com/drive/folders/16w5bbm3-spnzBsI9Ul0vZGdHOmQaUrOP",
-            "paypal": "https://www.paypal.me/iczyn",
-            "telegram": "https://t.me/iczynbuilds",
-            "dt": "https://github.com/AlphaDroid-devices/device_google_raviole",
-            "common-dt": "",
-            "kernel": "https://android.googlesource.com/device/google/raviole-kernel"
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/PyrtlesPixels",
+            "dt": "https://github.com/AlphaDroid-devices/device_google_gs201",
+            "common-dt": "https://github.com/AlphaDroid-devices/device_google_pantah",
+            "kernel": "https://github.com/AlphaDroid-devices/Kirisakura_Pantah"
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/raven.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/panther.json",
       "lastModified": null,
-      "size": "1005",
-      "sha": "fcd6d409686f097ee2ff4f366a573fd4faff342a"
+      "size": "1004",
+      "sha": "9bdd6e0ba0cafe660ae6584db8b5e2667d992ee6"
     },
     {
       "name": "phoenix.json",
@@ -1981,6 +1982,41 @@
       "sha": "ed3c41a9966e08aae5511ee579c72a788b2fed03"
     },
     {
+      "name": "r5x.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "Amrito",
+            "oem": "Realme",
+            "device": "Realme 5/5i/5s (r5x)",
+            "filename": "AlphaDroid-13.0-20230721-r5x-core_gapps-v1.7.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/r5x/AlphaDroid-13.0-20230721-r5x-core_gapps-v1.7.zip/download",
+            "timestamp": 1689977908,
+            "md5": "7f29ade374638ceb91d64f1641a2dfff",
+            "sha256": "c92a19273b223bc106084fc8a4b2340d638ee0e87897286337f19342d0726984",
+            "size": 1677119693,
+            "version": "1.7",
+            "buildtype": "core_gapps",
+            "forum": "https://t.me/alphadroid_chat",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/Realme5Dev",
+            "dt": "https://github.com/AlphaDroid-devices/device_realme_r5x",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_realme_r5x"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/r5x.json",
+      "lastModified": null,
+      "size": "901",
+      "sha": "d65a6b76d076f71bc8c38ffe8eb51f5947f3ef6d"
+    },
+    {
       "name": "raphael.json",
       "data": {
         "response": [
@@ -2016,21 +2052,91 @@
       "sha": "a995dc53ba76f8e6d65a391fd090906401ef838b"
     },
     {
-      "name": "r5x.json",
+      "name": "RMX3461.json",
       "data": {
         "response": [
           {
-            "maintainer": "Amrito",
+            "maintainer": "DRvP00",
             "oem": "Realme",
-            "device": "Realme 5/5i/5s (r5x)",
-            "filename": "AlphaDroid-13.0-20230721-r5x-core_gapps-v1.7.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/r5x/AlphaDroid-13.0-20230721-r5x-core_gapps-v1.7.zip/download",
-            "timestamp": 1689977908,
-            "md5": "7f29ade374638ceb91d64f1641a2dfff",
-            "sha256": "c92a19273b223bc106084fc8a4b2340d638ee0e87897286337f19342d0726984",
-            "size": 1677119693,
-            "version": "1.7",
-            "buildtype": "core_gapps",
+            "device": "RMX3461",
+            "filename": "AlphaDroid-20230316-RMX3461-vanilla-v1.2.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/RMX3461/AlphaDroid-20230316-RMX3461-vanilla-v1.2.1.zip/download",
+            "timestamp": 1678871660,
+            "md5": "87ea058a7a6621ac68b73689d9ccce96",
+            "sha256": "bd30dbda4ad70628c08d9ce323f00613b8d99f8f3ad27a363609de64b1337bba",
+            "size": 1750613331,
+            "version": "1.2.1",
+            "buildtype": "vanilla",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/realme9se",
+            "dt": "https://github.com/AlphaDroid-devices/device_realme_RMX3461",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_realme_sm8350"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/RMX3461.json",
+      "lastModified": null,
+      "size": "865",
+      "sha": "6eb667ae055bc4971dd489477cb992ec007a3d99"
+    },
+    {
+      "name": "rmx3371.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "Amrutesh",
+            "oem": "",
+            "device": "",
+            "filename": "AlphaDroid-13.0-20230828-rmx3371-gapps-v1.8.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/rmx3371/AlphaDroid-13.0-20230828-rmx3371-gapps-v1.8.zip/download",
+            "timestamp": 1693231417,
+            "md5": "507f98aef9db333f83787ddba6966857",
+            "sha256": "10889c8ab8cf2a4008619a0b4d951f86276c200609bb20b35596d1b04047256d",
+            "size": 1804272450,
+            "version": "1.8",
+            "buildtype": "",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "",
+            "dt": "",
+            "common-dt": "https://github.com/AlphaDroid-devices/rmx3371_realme_sm8250-common.git",
+            "kernel": "https://github.com/AlphaDroid-devices/device_realme_rmx3371.git"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/rmx3371.json",
+      "lastModified": null,
+      "size": "841",
+      "sha": "996e44b81dad40e1fe4d84b07ec9842bce247141"
+    },
+    {
+      "name": "rova.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "Maxx459",
+            "oem": "Xiaomi",
+            "device": "Redmi 4A/5A",
+            "filename": "AlphaDroid-14.0-20240513-rova-vanilla-v2.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/rova/AlphaDroid-14.0-20240513-rova-vanilla-v2.1.zip/download",
+            "timestamp": 1715609949,
+            "md5": "ecd5c10263dfd7efc4a9f6dddd33e283",
+            "sha256": "87a9f1a05bff0d61552c697c9db8c8e7e20c0e9d8e438f230a49ae6c63f02603",
+            "size": 1050622054,
+            "version": "2.1",
+            "buildtype": "vanilla",
             "forum": "https://t.me/alphadroid_chat",
             "gapps": "",
             "firmware": "",
@@ -2038,17 +2144,87 @@
             "bootloader": "",
             "recovery": "",
             "paypal": "",
-            "telegram": "https://t.me/Realme5Dev",
-            "dt": "https://github.com/AlphaDroid-devices/device_realme_r5x",
+            "telegram": "https://t.me/maxx459_mybuilds_discussion",
+            "dt": "https://github.com/AlphaDroid-devices/android_device_xiaomi_rova",
             "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_realme_r5x"
+            "kernel": "https://github.com/AlphaDroid-devices/android_kernel_xiaomi_rova"
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/r5x.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/rova.json",
       "lastModified": null,
-      "size": "901",
-      "sha": "d65a6b76d076f71bc8c38ffe8eb51f5947f3ef6d"
+      "size": "922",
+      "sha": "165d2699f6a46f9ee1af34cad8cf8cb3c91fb870"
+    },
+    {
+      "name": "rhode.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "",
+            "oem": "",
+            "device": "",
+            "filename": "AlphaDroid-14.0-20231231-rhode-gapps-v2.0.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/rhode/AlphaDroid-14.0-20231231-rhode-gapps-v2.0.zip/download",
+            "timestamp": 1704028094,
+            "md5": "75ec7417843c3d3f5f3d0283144334ce",
+            "sha256": "fbea60cb1ccaf186085788d24cb444282ff17ab24c7f25bd5251f10e495b530d",
+            "size": 1404368646,
+            "version": "2.0",
+            "buildtype": "",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/sdm680_moto",
+            "dt": "https://github.com/AlphaDroid-devices/device_motorola_devon",
+            "common-dt": "https://github.com/AlphaDroid-devices/device_motorola_sm6225-common",
+            "kernel": "https://github.com/SM6225-Project/kernel_motorola_sm6225"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/rhode.json",
+      "lastModified": null,
+      "size": "900",
+      "sha": "75d3f4ed69206c4b93a8374911a5c7d30e0ea823"
+    },
+    {
+      "name": "raven.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "IczYn",
+            "oem": "Google",
+            "device": "Google Pixel 6 Pro",
+            "filename": "AlphaDroid-14.0-20240912-raven-vanilla-v2.5.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/raven/AlphaDroid-14.0-20240912-raven-vanilla-v2.5.zip/download",
+            "timestamp": 1726127767,
+            "md5": "ba2107da7e88c652ec6a5f7940b15880",
+            "sha256": "a4c4ec9bc20b195b46191109110aed8fb17bbffbad43999d5ac1c18e415fd2c5",
+            "size": 1653658574,
+            "version": "2.5",
+            "buildtype": "vanilla",
+            "forum": "https://t.me/alphadroid_chat",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "https://drive.google.com/drive/folders/16w5bbm3-spnzBsI9Ul0vZGdHOmQaUrOP",
+            "paypal": "https://www.paypal.me/iczyn",
+            "telegram": "https://t.me/iczynbuilds",
+            "dt": "https://github.com/AlphaDroid-devices/device_google_raviole",
+            "common-dt": "",
+            "kernel": "https://android.googlesource.com/device/google/raviole-kernel"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/raven.json",
+      "lastModified": null,
+      "size": "1005",
+      "sha": "fcd6d409686f097ee2ff4f366a573fd4faff342a"
     },
     {
       "name": "rubyx.json",
@@ -2112,144 +2288,39 @@
       "sha": "b2bf43354f438b5cdb0f1345d5c317361f888f9c"
     },
     {
-      "name": "rova.json",
+      "name": "Spacewar.json",
       "data": {
         "response": [
           {
-            "maintainer": "Maxx459",
-            "oem": "Xiaomi",
-            "device": "Redmi 4A/5A",
-            "filename": "AlphaDroid-14.0-20240513-rova-vanilla-v2.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/rova/AlphaDroid-14.0-20240513-rova-vanilla-v2.1.zip/download",
-            "timestamp": 1715609949,
-            "md5": "ecd5c10263dfd7efc4a9f6dddd33e283",
-            "sha256": "87a9f1a05bff0d61552c697c9db8c8e7e20c0e9d8e438f230a49ae6c63f02603",
-            "size": 1050622054,
-            "version": "2.1",
-            "buildtype": "vanilla",
-            "forum": "https://t.me/alphadroid_chat",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/maxx459_mybuilds_discussion",
-            "dt": "https://github.com/AlphaDroid-devices/android_device_xiaomi_rova",
-            "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/android_kernel_xiaomi_rova"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/rova.json",
-      "lastModified": null,
-      "size": "922",
-      "sha": "165d2699f6a46f9ee1af34cad8cf8cb3c91fb870"
-    },
-    {
-      "name": "rmx3371.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "Amrutesh",
-            "oem": "",
-            "device": "",
-            "filename": "AlphaDroid-13.0-20230828-rmx3371-gapps-v1.8.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/rmx3371/AlphaDroid-13.0-20230828-rmx3371-gapps-v1.8.zip/download",
-            "timestamp": 1693231417,
-            "md5": "507f98aef9db333f83787ddba6966857",
-            "sha256": "10889c8ab8cf2a4008619a0b4d951f86276c200609bb20b35596d1b04047256d",
-            "size": 1804272450,
-            "version": "1.8",
-            "buildtype": "",
+            "maintainer": "zizzyboi",
+            "oem": "Nothing",
+            "device": "Phone (1)",
+            "filename": "AlphaDroid-14.0-20241016-Spacewar-gapps-v2.5.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/Spacewar/AlphaDroid-14.0-20241016-Spacewar-gapps-v2.5.zip/download",
+            "timestamp": 1729059483,
+            "md5": "7dfd2a11b934085de40eee7a0f9a84d9",
+            "sha256": "26186c35356be251dd4b18e92e710e1c35c760701d374e2c64aca51606cbab18",
+            "size": 2664264492,
+            "version": "2.5",
+            "buildtype": "gapps",
             "forum": "",
             "gapps": "",
             "firmware": "",
             "modem": "",
             "bootloader": "",
             "recovery": "",
-            "paypal": "",
-            "telegram": "",
+            "paypal": "https://paypal.me/zizzyboi?country.x=CA&locale.x=en_US",
+            "telegram": "https://t.me/zizzynp1roms",
             "dt": "",
-            "common-dt": "https://github.com/AlphaDroid-devices/rmx3371_realme_sm8250-common.git",
-            "kernel": "https://github.com/AlphaDroid-devices/device_realme_rmx3371.git"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/rmx3371.json",
-      "lastModified": null,
-      "size": "841",
-      "sha": "996e44b81dad40e1fe4d84b07ec9842bce247141"
-    },
-    {
-      "name": "rhode.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "",
-            "oem": "",
-            "device": "",
-            "filename": "AlphaDroid-14.0-20231231-rhode-gapps-v2.0.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/rhode/AlphaDroid-14.0-20231231-rhode-gapps-v2.0.zip/download",
-            "timestamp": 1704028094,
-            "md5": "75ec7417843c3d3f5f3d0283144334ce",
-            "sha256": "fbea60cb1ccaf186085788d24cb444282ff17ab24c7f25bd5251f10e495b530d",
-            "size": 1404368646,
-            "version": "2.0",
-            "buildtype": "",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/sdm680_moto",
-            "dt": "https://github.com/AlphaDroid-devices/device_motorola_devon",
-            "common-dt": "https://github.com/AlphaDroid-devices/device_motorola_sm6225-common",
-            "kernel": "https://github.com/SM6225-Project/kernel_motorola_sm6225"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/rhode.json",
-      "lastModified": null,
-      "size": "900",
-      "sha": "75d3f4ed69206c4b93a8374911a5c7d30e0ea823"
-    },
-    {
-      "name": "RMX3461.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "DRvP00",
-            "oem": "Realme",
-            "device": "RMX3461",
-            "filename": "AlphaDroid-20230316-RMX3461-vanilla-v1.2.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/RMX3461/AlphaDroid-20230316-RMX3461-vanilla-v1.2.1.zip/download",
-            "timestamp": 1678871660,
-            "md5": "87ea058a7a6621ac68b73689d9ccce96",
-            "sha256": "bd30dbda4ad70628c08d9ce323f00613b8d99f8f3ad27a363609de64b1337bba",
-            "size": 1750613331,
-            "version": "1.2.1",
-            "buildtype": "vanilla",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/realme9se",
-            "dt": "https://github.com/AlphaDroid-devices/device_realme_RMX3461",
             "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_realme_sm8350"
+            "kernel": ""
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/RMX3461.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/Spacewar.json",
       "lastModified": null,
-      "size": "865",
-      "sha": "6eb667ae055bc4971dd489477cb992ec007a3d99"
+      "size": "811",
+      "sha": "8a34841dbb59413deacdf733ddfe63679532b5bd"
     },
     {
       "name": "salami.json",
@@ -2358,198 +2429,6 @@
       "sha": "e3d70b0e683274436da37855f30ff1f1b2a0efad"
     },
     {
-      "name": "Spacewar.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "zizzyboi",
-            "oem": "Nothing",
-            "device": "Phone (1)",
-            "filename": "AlphaDroid-14.0-20241016-Spacewar-gapps-v2.5.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/Spacewar/AlphaDroid-14.0-20241016-Spacewar-gapps-v2.5.zip/download",
-            "timestamp": 1729059483,
-            "md5": "7dfd2a11b934085de40eee7a0f9a84d9",
-            "sha256": "26186c35356be251dd4b18e92e710e1c35c760701d374e2c64aca51606cbab18",
-            "size": 2664264492,
-            "version": "2.5",
-            "buildtype": "gapps",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "https://paypal.me/zizzyboi?country.x=CA&locale.x=en_US",
-            "telegram": "https://t.me/zizzynp1roms",
-            "dt": "",
-            "common-dt": "",
-            "kernel": ""
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/Spacewar.json",
-      "lastModified": null,
-      "size": "811",
-      "sha": "8a34841dbb59413deacdf733ddfe63679532b5bd"
-    },
-    {
-      "name": "spartan.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "Amrutesh",
-            "oem": "Realme",
-            "device": "GT Neo 3T (spartan)",
-            "filename": "AlphaDroid-13.0-20230810-spartan-full_gapps-v1.7.9.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/spartan/AlphaDroid-13.0-20230810-spartan-full_gapps-v1.7.9.zip/download",
-            "timestamp": 1691673609,
-            "md5": "2528dd36153535a21c8183f42eed4ce3",
-            "sha256": "99c0de4c21420cff882c0219661aa1fe9c0a35c2e143ca430657300e55374cc5",
-            "size": 1751842709,
-            "version": "1.7.9",
-            "buildtype": "full_gapps",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "",
-            "dt": "https://github.com/AlphaDroid-devices/device_realme_spartan",
-            "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_realme_spartan"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/spartan.json",
-      "lastModified": null,
-      "size": "877",
-      "sha": "a9cb968c9aa2a0776dec34d28996e09d09df59fd"
-    },
-    {
-      "name": "sunny.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "ZNAIV",
-            "oem": "Xiaomi",
-            "device": "sunny",
-            "filename": "AlphaDroid-16-20260421-gapps-sunny-v4.4.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/sunny/4.4/AlphaDroid-16-20260421-gapps-sunny-v4.4.zip/download",
-            "timestamp": 1776733797,
-            "md5": "6c470e3e1456d9797ef5a31d9c5f66cf",
-            "sha256": "f2fa38b6369448edc9d2c570fa6b8f10a24816921672fb7d8cecece2178f2f6c",
-            "size": 1945519589,
-            "version": "4.4",
-            "buildtype": "Official",
-            "buildvariant": "gapps",
-            "forum": "https://t.me/alphadroid_chat",
-            "gapps": "",
-            "firmware": "https://drive.google.com/file/d/1y_V2SgRkpRSYnc1IhHqvfu4l5QELqgQ0/view",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "https://sourceforge.net/projects/alphadroid-project/files/sunny/4.4/AlphaDroid-16-20260421-recovery-sunny-v4.4.zip/download",
-            "paypal": "https://www.paypal.com/paypalme/znaiv",
-            "telegram": "https://t.me/shawkcommunity/15362",
-            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_sunny/tree/alpha-16.2",
-            "common-dt": "",
-            "kernel": "https://github.com/Neternels/android_kernel_xiaomi_sunny/tree/staging"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/sunny.json",
-      "lastModified": null,
-      "size": "1404",
-      "sha": "2274b58799d98e7b058667259f3656d63e1ad615"
-    },
-    {
-      "name": "surya.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "shoya0x00",
-            "oem": "Xiaomi",
-            "device": "surya",
-            "filename": "AlphaDroid-15.1-20250219-gapps-surya-v3.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/surya/AlphaDroid-15.1-20250219-gapps-surya-v3.1.zip/download",
-            "timestamp": 1739994123,
-            "md5": "81aa07fad322066a8c56441e5a82df84",
-            "sha256": "d5d7d389faa3dcac5178e08077ad3f93a127034a48fccadb9a405e94c640d50c",
-            "size": 2820729568,
-            "version": "3.1",
-            "buildtype": "Official",
-            "buildvariant": "gapps",
-            "forum": "https://t.me/alphadroid_chat",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/POCOX3_Build_SG",
-            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_surya",
-            "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_surya"
-          },
-          {
-            "maintainer": "shoya0x00",
-            "oem": "Xiaomi",
-            "device": "surya",
-            "filename": "AlphaDroid-15.1-20250220-microg-surya-v3.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/surya/AlphaDroid-15.1-20250220-microg-surya-v3.1.zip/download",
-            "timestamp": 1740025422,
-            "md5": "edea64fcbb5195acfa33e2ca8a3251e5",
-            "sha256": "c42ab90a1aa0a939aa5042779a5d7764e49392658c0dc2c75ca2e77d6be21a81",
-            "size": 1930539569,
-            "version": "3.1",
-            "buildtype": "Official",
-            "buildvariant": "microg",
-            "forum": "https://t.me/alphadroid_chat",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/POCOX3_Build_SG",
-            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_surya",
-            "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_surya"
-          },
-          {
-            "maintainer": "shoya0x00",
-            "oem": "Xiaomi",
-            "device": "surya",
-            "filename": "AlphaDroid-15.1-20250219-vanilla-surya-v3.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/surya/AlphaDroid-15.1-20250219-vanilla-surya-v3.1.zip/download",
-            "timestamp": 1739998020,
-            "md5": "454c128f611f6ce9c912cee45182e342",
-            "sha256": "41ff6b820508a756d5d7a0470ac6588443a256880314a2ed051f81a65918a1e1",
-            "size": 1816700728,
-            "version": "3.1",
-            "buildtype": "Official",
-            "buildvariant": "vanilla",
-            "forum": "https://t.me/alphadroid_chat",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/POCOX3_Build_SG",
-            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_surya",
-            "common-dt": "",
-            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_surya"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/surya.json",
-      "lastModified": null,
-      "size": "2727",
-      "sha": "8ef347c2e1679856c3f1095dd59740de6aef6cb6"
-    },
-    {
       "name": "stone.json",
       "data": {
         "response": [
@@ -2646,6 +2525,41 @@
       "sha": "3e605c7c9bc010c26be5cda67cfbeb19244faa5b"
     },
     {
+      "name": "spartan.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "Amrutesh",
+            "oem": "Realme",
+            "device": "GT Neo 3T (spartan)",
+            "filename": "AlphaDroid-13.0-20230810-spartan-full_gapps-v1.7.9.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/spartan/AlphaDroid-13.0-20230810-spartan-full_gapps-v1.7.9.zip/download",
+            "timestamp": 1691673609,
+            "md5": "2528dd36153535a21c8183f42eed4ce3",
+            "sha256": "99c0de4c21420cff882c0219661aa1fe9c0a35c2e143ca430657300e55374cc5",
+            "size": 1751842709,
+            "version": "1.7.9",
+            "buildtype": "full_gapps",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "",
+            "dt": "https://github.com/AlphaDroid-devices/device_realme_spartan",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_realme_spartan"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/spartan.json",
+      "lastModified": null,
+      "size": "877",
+      "sha": "a9cb968c9aa2a0776dec34d28996e09d09df59fd"
+    },
+    {
       "name": "sunfish.json",
       "data": {
         "response": [
@@ -2705,74 +2619,40 @@
       "sha": "96ab9121e2e20f104721b86e5682fa34d803b671"
     },
     {
-      "name": "tokay.json",
+      "name": "sunny.json",
       "data": {
         "response": [
           {
-            "maintainer": "OscarM",
-            "oem": "Google",
-            "device": "Pixel9",
-            "filename": "AlphaDroid-15.1-20250223-gapps-tokay-v3.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/tokay/AlphaDroid-15.1-20250223-gapps-tokay-v3.1.zip/download",
-            "timestamp": 1740281822,
-            "md5": "c09a5bf653848155652a5e269a3de9e4",
-            "sha256": "72c51a04e587d25efc54ebc4ae75173c1b3b33ff0a1dfa1d638c8fdb755a7ab4",
-            "size": 2972743202,
-            "version": "3.1",
-            "buildtype": "Official",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "https://www.paypal.me/osmjr1019",
-            "telegram": "https://t.me/caimito_roms",
-            "dt": "https://github.com/AlphaDroid-devices/device_google_caimito",
-            "common-dt": "https://github.com/AlphaDroid-devices/device_google_zumapro",
-            "kernel": ""
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/tokay.json",
-      "lastModified": null,
-      "size": "1110",
-      "sha": "4aff093a5f4e3f2df64970c29db3dd1c2f114a5d"
-    },
-    {
-      "name": "topaz.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "hefatss",
+            "maintainer": "ZNAIV",
             "oem": "Xiaomi",
-            "device": "Redmi Note 12 4G",
-            "filename": "AlphaDroid-13.0-20231103-topaz-vanilla-v1.10.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/topaz/AlphaDroid-13.0-20231103-topaz-vanilla-v1.10.zip/download",
-            "timestamp": 1698989262,
-            "md5": "990862f03c4bd8600f1eac39e6b41717",
-            "sha256": "4d18769a4f121a173f9cc47993fda36f28cfaf80aa6a242c46e7da10116ba63e",
-            "size": 1394946490,
-            "version": "1.10",
-            "buildtype": "vanilla",
+            "device": "sunny",
+            "filename": "AlphaDroid-16-20260421-gapps-sunny-v4.4.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/sunny/4.4/AlphaDroid-16-20260421-gapps-sunny-v4.4.zip/download",
+            "timestamp": 1776733797,
+            "md5": "6c470e3e1456d9797ef5a31d9c5f66cf",
+            "sha256": "f2fa38b6369448edc9d2c570fa6b8f10a24816921672fb7d8cecece2178f2f6c",
+            "size": 1945519589,
+            "version": "4.4",
+            "buildtype": "Official",
+            "buildvariant": "gapps",
             "forum": "https://t.me/alphadroid_chat",
             "gapps": "",
-            "firmware": "",
+            "firmware": "https://drive.google.com/file/d/1y_V2SgRkpRSYnc1IhHqvfu4l5QELqgQ0/view",
             "modem": "",
             "bootloader": "",
-            "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/hefatss",
-            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_topaz",
+            "recovery": "https://sourceforge.net/projects/alphadroid-project/files/sunny/4.4/AlphaDroid-16-20260421-recovery-sunny-v4.4.zip/download",
+            "paypal": "https://www.paypal.com/paypalme/znaiv",
+            "telegram": "https://t.me/shawkcommunity/15362",
+            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_sunny/tree/alpha-16.2",
             "common-dt": "",
-            "kernel": ""
+            "kernel": "https://github.com/Neternels/android_kernel_xiaomi_sunny/tree/staging"
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/topaz.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/sunny.json",
       "lastModified": null,
-      "size": "842",
-      "sha": "a8a68db74e09fb8270d46b24be8bd9112a84c5db"
+      "size": "1404",
+      "sha": "2274b58799d98e7b058667259f3656d63e1ad615"
     },
     {
       "name": "sweet.json",
@@ -2897,6 +2777,197 @@
       "sha": "9b8e55eec683fb47e41a92409bb6e7789a297b93"
     },
     {
+      "name": "surya.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "shoya0x00",
+            "oem": "Xiaomi",
+            "device": "surya",
+            "filename": "AlphaDroid-15.1-20250219-gapps-surya-v3.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/surya/AlphaDroid-15.1-20250219-gapps-surya-v3.1.zip/download",
+            "timestamp": 1739994123,
+            "md5": "81aa07fad322066a8c56441e5a82df84",
+            "sha256": "d5d7d389faa3dcac5178e08077ad3f93a127034a48fccadb9a405e94c640d50c",
+            "size": 2820729568,
+            "version": "3.1",
+            "buildtype": "Official",
+            "buildvariant": "gapps",
+            "forum": "https://t.me/alphadroid_chat",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/POCOX3_Build_SG",
+            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_surya",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_surya"
+          },
+          {
+            "maintainer": "shoya0x00",
+            "oem": "Xiaomi",
+            "device": "surya",
+            "filename": "AlphaDroid-15.1-20250220-microg-surya-v3.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/surya/AlphaDroid-15.1-20250220-microg-surya-v3.1.zip/download",
+            "timestamp": 1740025422,
+            "md5": "edea64fcbb5195acfa33e2ca8a3251e5",
+            "sha256": "c42ab90a1aa0a939aa5042779a5d7764e49392658c0dc2c75ca2e77d6be21a81",
+            "size": 1930539569,
+            "version": "3.1",
+            "buildtype": "Official",
+            "buildvariant": "microg",
+            "forum": "https://t.me/alphadroid_chat",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/POCOX3_Build_SG",
+            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_surya",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_surya"
+          },
+          {
+            "maintainer": "shoya0x00",
+            "oem": "Xiaomi",
+            "device": "surya",
+            "filename": "AlphaDroid-15.1-20250219-vanilla-surya-v3.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/surya/AlphaDroid-15.1-20250219-vanilla-surya-v3.1.zip/download",
+            "timestamp": 1739998020,
+            "md5": "454c128f611f6ce9c912cee45182e342",
+            "sha256": "41ff6b820508a756d5d7a0470ac6588443a256880314a2ed051f81a65918a1e1",
+            "size": 1816700728,
+            "version": "3.1",
+            "buildtype": "Official",
+            "buildvariant": "vanilla",
+            "forum": "https://t.me/alphadroid_chat",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/POCOX3_Build_SG",
+            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_surya",
+            "common-dt": "",
+            "kernel": "https://github.com/AlphaDroid-devices/kernel_xiaomi_surya"
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/surya.json",
+      "lastModified": null,
+      "size": "2727",
+      "sha": "8ef347c2e1679856c3f1095dd59740de6aef6cb6"
+    },
+    {
+      "name": "topaz.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "hefatss",
+            "oem": "Xiaomi",
+            "device": "Redmi Note 12 4G",
+            "filename": "AlphaDroid-13.0-20231103-topaz-vanilla-v1.10.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/topaz/AlphaDroid-13.0-20231103-topaz-vanilla-v1.10.zip/download",
+            "timestamp": 1698989262,
+            "md5": "990862f03c4bd8600f1eac39e6b41717",
+            "sha256": "4d18769a4f121a173f9cc47993fda36f28cfaf80aa6a242c46e7da10116ba63e",
+            "size": 1394946490,
+            "version": "1.10",
+            "buildtype": "vanilla",
+            "forum": "https://t.me/alphadroid_chat",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/hefatss",
+            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_topaz",
+            "common-dt": "",
+            "kernel": ""
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/topaz.json",
+      "lastModified": null,
+      "size": "842",
+      "sha": "a8a68db74e09fb8270d46b24be8bd9112a84c5db"
+    },
+    {
+      "name": "tokay.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "OscarM",
+            "oem": "Google",
+            "device": "Pixel9",
+            "filename": "AlphaDroid-15.1-20250223-gapps-tokay-v3.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/tokay/AlphaDroid-15.1-20250223-gapps-tokay-v3.1.zip/download",
+            "timestamp": 1740281822,
+            "md5": "c09a5bf653848155652a5e269a3de9e4",
+            "sha256": "72c51a04e587d25efc54ebc4ae75173c1b3b33ff0a1dfa1d638c8fdb755a7ab4",
+            "size": 2972743202,
+            "version": "3.1",
+            "buildtype": "Official",
+            "forum": "",
+            "gapps": "",
+            "firmware": "",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "https://www.paypal.me/osmjr1019",
+            "telegram": "https://t.me/caimito_roms",
+            "dt": "https://github.com/AlphaDroid-devices/device_google_caimito",
+            "common-dt": "https://github.com/AlphaDroid-devices/device_google_zumapro",
+            "kernel": ""
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/tokay.json",
+      "lastModified": null,
+      "size": "1110",
+      "sha": "4aff093a5f4e3f2df64970c29db3dd1c2f114a5d"
+    },
+    {
+      "name": "violet.json",
+      "data": {
+        "response": [
+          {
+            "maintainer": "Dr.Opto",
+            "oem": "redmi",
+            "device": "Redmi Note 7Pro",
+            "filename": "AlphaDroid-14.0-20240708-violet-microg-v2.2.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/violet/AlphaDroid-14.0-20240708-violet-microg-v2.2.zip/download",
+            "timestamp": 1720448933,
+            "md5": "2432205592f4651e71a67cb38761d9ad",
+            "sha256": "770468781b76f2f32327113bebd9f68525bb2fb2233a410bcdfc369b0d0d7e87",
+            "size": 1648924664,
+            "version": "2.2",
+            "buildtype": "microg",
+            "forum": "",
+            "gapps": "",
+            "firmware": "https://xiaomifirmwareupdater.com/firmware/violet/",
+            "modem": "",
+            "bootloader": "",
+            "recovery": "",
+            "paypal": "",
+            "telegram": "https://t.me/optoprjkt",
+            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_violet.git",
+            "common-dt": "",
+            "kernel": ""
+          }
+        ]
+      },
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/violet.json",
+      "lastModified": null,
+      "size": "1370",
+      "sha": "3c5f28fd02882a147c7eeab9349536a462a6320f"
+    },
+    {
       "name": "veux.json",
       "data": {
         "response": [
@@ -2931,42 +3002,6 @@
       "lastModified": null,
       "size": "1129",
       "sha": "862badd7e15a528ba2d81e1a90684ed89ec34433"
-    },
-    {
-      "name": "waffle.json",
-      "data": {
-        "response": [
-          {
-            "maintainer": "javi",
-            "oem": "OnePlus",
-            "device": "waffle",
-            "filename": "AlphaDroid-16-20251026-gapps-waffle-v4.1.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/waffle/AlphaDroid-16-20251026-gapps-waffle-v4.1.zip/download",
-            "timestamp": 1761463540,
-            "md5": "3937528316ac83805216e29601daff17",
-            "sha256": "7600ac035b86962152fb9e59926b567b128dcb9669ef81c298c96b293ec3feda",
-            "size": 3634248953,
-            "version": "4.1",
-            "buildtype": "Official",
-            "buildvariant": "gapps",
-            "forum": "",
-            "gapps": "",
-            "firmware": "",
-            "modem": "",
-            "bootloader": "",
-            "recovery": "",
-            "paypal": "https://www.paypal.com/donate/?hosted_button_id=UKKSXJYZDMH58",
-            "telegram": "https://t.me/OnePlus_12_Custom/11451",
-            "dt": "https://github.com/AlphaDroid-devices/device_oneplus_waffle",
-            "common-dt": "https://github.com/AlphaDroid-devices/device_oneplus_sm8650-common",
-            "kernel": "https://github.com/Waffle-Backdoor/android_kernel_oneplus_sm8650"
-          }
-        ]
-      },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/waffle.json",
-      "lastModified": null,
-      "size": "1257",
-      "sha": "3a11af81fdca7ec7c0053297b0e6a68590988080"
     },
     {
       "name": "vili.json",
@@ -3004,39 +3039,40 @@
       "sha": "d9887a75c3a6e450f96001f0aaa3885dbddf1166"
     },
     {
-      "name": "violet.json",
+      "name": "waffle.json",
       "data": {
         "response": [
           {
-            "maintainer": "Dr.Opto",
-            "oem": "redmi",
-            "device": "Redmi Note 7Pro",
-            "filename": "AlphaDroid-14.0-20240708-violet-microg-v2.2.zip",
-            "download": "https://sourceforge.net/projects/alphadroid-project/files/violet/AlphaDroid-14.0-20240708-violet-microg-v2.2.zip/download",
-            "timestamp": 1720448933,
-            "md5": "2432205592f4651e71a67cb38761d9ad",
-            "sha256": "770468781b76f2f32327113bebd9f68525bb2fb2233a410bcdfc369b0d0d7e87",
-            "size": 1648924664,
-            "version": "2.2",
-            "buildtype": "microg",
+            "maintainer": "javi",
+            "oem": "OnePlus",
+            "device": "waffle",
+            "filename": "AlphaDroid-16-20251026-gapps-waffle-v4.1.zip",
+            "download": "https://sourceforge.net/projects/alphadroid-project/files/waffle/AlphaDroid-16-20251026-gapps-waffle-v4.1.zip/download",
+            "timestamp": 1761463540,
+            "md5": "3937528316ac83805216e29601daff17",
+            "sha256": "7600ac035b86962152fb9e59926b567b128dcb9669ef81c298c96b293ec3feda",
+            "size": 3634248953,
+            "version": "4.1",
+            "buildtype": "Official",
+            "buildvariant": "gapps",
             "forum": "",
             "gapps": "",
-            "firmware": "https://xiaomifirmwareupdater.com/firmware/violet/",
+            "firmware": "",
             "modem": "",
             "bootloader": "",
             "recovery": "",
-            "paypal": "",
-            "telegram": "https://t.me/optoprjkt",
-            "dt": "https://github.com/AlphaDroid-devices/device_xiaomi_violet.git",
-            "common-dt": "",
-            "kernel": ""
+            "paypal": "https://www.paypal.com/donate/?hosted_button_id=UKKSXJYZDMH58",
+            "telegram": "https://t.me/OnePlus_12_Custom/11451",
+            "dt": "https://github.com/AlphaDroid-devices/device_oneplus_waffle",
+            "common-dt": "https://github.com/AlphaDroid-devices/device_oneplus_sm8650-common",
+            "kernel": "https://github.com/Waffle-Backdoor/android_kernel_oneplus_sm8650"
           }
         ]
       },
-      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/violet.json",
+      "rawUrl": "https://raw.githubusercontent.com/AlphaDroid-devices/OTA/alpha-16.2/waffle.json",
       "lastModified": null,
-      "size": "1370",
-      "sha": "3c5f28fd02882a147c7eeab9349536a462a6320f"
+      "size": "1257",
+      "sha": "3a11af81fdca7ec7c0053297b0e6a68590988080"
     }
   ]
 }
