@@ -22,34 +22,42 @@ jobs:
       - name: Process webhook payload
         id: webhook
         if: github.event_name == 'repository_dispatch'
+        env:
+          # Via the environment so payload contents cannot be expanded as shell
+          EVENT_ACTION: ${{ github.event.action }}
+          CLIENT_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+          CHANGED_FILES: ${{ github.event.client_payload.changed_files }}
         run: |
-          echo "Webhook event type: ${{ github.event.action }}"
-          echo "Webhook client payload: ${{ toJson(github.event.client_payload) }}"
-          
+          echo "Webhook event type: $EVENT_ACTION"
+          echo "Webhook client payload: $CLIENT_PAYLOAD"
+
           # Check if this is a relevant update
-          if [[ "${{ github.event.action }}" == "ota-update" ]] || [[ "${{ github.event.action }}" == "ota-device-update" ]]; then
-            echo "should_update=true" >> $GITHUB_OUTPUT
-            echo "trigger_reason=webhook" >> $GITHUB_OUTPUT
-            
-            # Extract changed files if available in payload
-            CHANGED_FILES="${{ github.event.client_payload.changed_files }}"
+          if [[ "$EVENT_ACTION" == "ota-update" ]] || [[ "$EVENT_ACTION" == "ota-device-update" ]]; then
+            echo "should_update=true" >> "$GITHUB_OUTPUT"
+            echo "trigger_reason=webhook" >> "$GITHUB_OUTPUT"
+
+            # A push touching more than one file arrives multiline, so it needs the delimiter form
+            {
+              echo "changed_files<<EOF_CHANGED_FILES"
+              echo "$CHANGED_FILES"
+              echo "EOF_CHANGED_FILES"
+            } >> "$GITHUB_OUTPUT"
+
+            # Check if any JSON files were changed
             if [[ -n "$CHANGED_FILES" ]]; then
-              echo "changed_files=$CHANGED_FILES" >> $GITHUB_OUTPUT
-              # Check if any JSON files were changed
               if echo "$CHANGED_FILES" | grep -q "\.json$"; then
-                echo "json_files_changed=true" >> $GITHUB_OUTPUT
+                echo "json_files_changed=true" >> "$GITHUB_OUTPUT"
               else
-                echo "json_files_changed=false" >> $GITHUB_OUTPUT
+                echo "json_files_changed=false" >> "$GITHUB_OUTPUT"
               fi
             else
-              echo "changed_files=" >> $GITHUB_OUTPUT
-              echo "json_files_changed=true" >> $GITHUB_OUTPUT  # Assume JSON files changed if not specified
+              echo "json_files_changed=true" >> "$GITHUB_OUTPUT"  # Assume JSON files changed if not specified
             fi
           else
-            echo "should_update=false" >> $GITHUB_OUTPUT
-            echo "trigger_reason=unrecognized_webhook" >> $GITHUB_OUTPUT
+            echo "should_update=false" >> "$GITHUB_OUTPUT"
+            echo "trigger_reason=unrecognized_webhook" >> "$GITHUB_OUTPUT"
           fi
-          
+
       - name: Check if update is needed
         id: check_update
         if: github.event_name != 'repository_dispatch' || steps.webhook.outputs.should_update == 'true'
