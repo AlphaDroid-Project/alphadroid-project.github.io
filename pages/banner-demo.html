@@ -361,7 +361,7 @@ Here</textarea
                         return cache.json.get(url);
                     }
 
-                    const res = await fetch(url, { cache: "force-cache" });
+                    const res = await fetch(url, { cache: "no-cache" });
                     if (!res.ok) throw new Error("Failed to load " + url);
                     const data = await res.json();
 
@@ -423,7 +423,8 @@ Here</textarea
                             if (!code) continue;
                             // Only add if not already in device_db
                             if (!map.has(code)) {
-                                const r = it?.data?.response;
+                                const raw = it?.data?.response;
+                                const r = Array.isArray(raw) ? raw[0] : raw;
                                 map.set(code, {
                                     codename: code,
                                     model: r?.device || "",

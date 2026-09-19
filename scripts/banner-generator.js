@@ -198,6 +198,22 @@
     return await res.json();
   }
 
+  function otaCodename(it) {
+    let name = String(it?.name || it?.filename || "").toLowerCase();
+    if (name.endsWith(".json")) name = name.slice(0, -5);
+    return name;
+  }
+
+  function firstOtaResponse(it) {
+    const r = it?.data?.response;
+    if (Array.isArray(r)) return r[0] || null;
+    return r || null;
+  }
+
+  function hasText(v) {
+    return v !== undefined && v !== null && String(v).trim() !== "";
+  }
+
   async function resolveDeviceFields(lookup, custom) {
     const code = String(lookup?.codename || "").toLowerCase();
     const devicesUrl = lookup?.devicesUrl || "data/devices.json";
@@ -250,16 +266,14 @@
       }
     }
 
-    // Fallback to data/devices.json
+    // Fallback to data/devices.json (OTA response is an array)
     if (devices && Array.isArray(devices.devices) && code) {
-      const match = devices.devices.find(
-        (it) => String(it?.name || it?.filename || "").toLowerCase() === code,
-      );
-      const r = match?.data?.response;
+      const match = devices.devices.find((it) => otaCodename(it) === code);
+      const r = firstOtaResponse(match);
       if (r) {
-        out.deviceName = r.device ?? out.deviceName; // model name in feed
-        out.manufacturer = r.oem ?? out.manufacturer; // OEM/manufacturer
-        out.maintainer = r.maintainer ?? out.maintainer; // maintainer
+        if (out.deviceName == null) out.deviceName = r.device ?? null;
+        if (out.manufacturer == null) out.manufacturer = r.oem ?? null;
+        if (out.maintainer == null) out.maintainer = r.maintainer ?? null;
         if (!out.isOfficial) out.isOfficial = true; // Found in devices.json
       }
     }
@@ -571,41 +585,29 @@
           userOptions.customFields || null,
         );
         if (fields) {
-          // For fields populated from database, prioritize: user explicit > detected from DB > defaults
-          // Use strict undefined checks to ensure DB values take priority over defaults
-          if (userOptions.deviceName !== undefined) {
+          // User-typed values win; empty strings do not — the dropdown leaves
+          // hidden fields blank for OTA-only devices, and those must not wipe DB data.
+          if (hasText(userOptions.deviceName)) {
             opts.deviceName = userOptions.deviceName;
-          } else if (
-            fields.deviceName !== undefined &&
-            fields.deviceName !== null
-          ) {
+          } else if (hasText(fields.deviceName)) {
             opts.deviceName = fields.deviceName;
           }
 
-          if (userOptions.codename !== undefined) {
+          if (hasText(userOptions.codename)) {
             opts.codename = userOptions.codename;
-          } else if (
-            fields.codename !== undefined &&
-            fields.codename !== null
-          ) {
+          } else if (hasText(fields.codename)) {
             opts.codename = fields.codename;
           }
 
-          if (userOptions.maintainer !== undefined) {
+          if (hasText(userOptions.maintainer)) {
             opts.maintainer = userOptions.maintainer;
-          } else if (
-            fields.maintainer !== undefined &&
-            fields.maintainer !== null
-          ) {
+          } else if (hasText(fields.maintainer)) {
             opts.maintainer = fields.maintainer;
           }
 
-          if (userOptions.manufacturer !== undefined) {
+          if (hasText(userOptions.manufacturer)) {
             opts.manufacturer = userOptions.manufacturer;
-          } else if (
-            fields.manufacturer !== undefined &&
-            fields.manufacturer !== null
-          ) {
+          } else if (hasText(fields.manufacturer)) {
             opts.manufacturer = fields.manufacturer;
           }
 
